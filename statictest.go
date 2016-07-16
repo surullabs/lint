@@ -1,6 +1,11 @@
 package statictest
 
-import "strings"
+import (
+	"fmt"
+	"go/build"
+	"os/exec"
+	"strings"
+)
 
 type Error struct {
 	Errors []string
@@ -47,4 +52,20 @@ func Skip(err error, skipper Skipper) error {
 		err.Errors = n
 	}
 	return err
+}
+
+func CheckCommand(name string, args ...string) error {
+	data, err := exec.Command(name, args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", string(data))
+	}
+	return nil
+}
+
+func PackageDir(path string) (string, error) {
+	pkg, err := build.Import(path, ".", build.FindOnly)
+	if err != nil {
+		return "", err
+	}
+	return pkg.Dir, nil
 }

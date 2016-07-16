@@ -1,10 +1,17 @@
-package statictest
+package statictest_test
 
-import "testing"
+import (
+	"github.com/surullabs/statictest/gofmt"
+	"testing"
+)
 
-func TestPackage(t *testing.T) {
-	err := Package(".")
-	if err != nil {
-		t.Fatal(err)
+func TestStaticChecks(t *testing.T) {
+	type checkFn func(string) error
+	for _, check := range []checkFn{
+		gofmt.Check,
+	} {
+		if err := check("."); err != nil {
+			t.Error(err)
+		}
 	}
 }
