@@ -5,6 +5,7 @@ import (
 	"go/build"
 	"io/ioutil"
 	"os/exec"
+	"runtime"
 	"strings"
 	"syscall"
 )
@@ -15,10 +16,6 @@ type Error struct {
 
 func (e *Error) Error() string {
 	return strings.Join(e.Errors, "\n")
-}
-
-type Checker interface {
-	Check(pkg string) error
 }
 
 type Skipper interface {
@@ -54,14 +51,6 @@ func Skip(err error, skipper Skipper) error {
 		err.Errors = n
 	}
 	return err
-}
-
-func CheckCommand(name string, args ...string) error {
-	data, err := exec.Command(name, args...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%s", string(data))
-	}
-	return nil
 }
 
 func PackageDir(path string) (string, error) {
@@ -105,4 +94,34 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 		res.Code = st.ExitStatus()
 	}
 	return res, err
+}
+
+type Errorer interface {
+	Error(args ...interface{})
+}
+
+type CheckFn func(pkg string) error
+
+func Check(t Errorer, pkg string, fns ...CheckFn) {
+	var buf [100]uintptr
+	for _, fn := range fns {
+		err := fn(pkg)
+		if err == nil {
+			continue
+		}
+
+		b := buf[:100]
+		num := runtime.Callers(1, b)
+		frames := runtime.CallersFrames(b)
+		lines := make([]string, 0, num+1)
+		lines = append(lines, err.Error())
+		for frame, more := frames.Next(); more; frame, more = frames.Next() {
+			if frame.Function == "" {
+				continue
+			}
+			lines = append(lines, fmt.Sprintf("%s:%d: %s", frame.File, frame.Line, frame.Function))
+		}
+
+		t.Error(strings.Join(lines, "\n"))
+	}
 }
