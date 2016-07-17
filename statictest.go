@@ -3,8 +3,10 @@ package statictest
 import (
 	"fmt"
 	"go/build"
+	"io/ioutil"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 type Error struct {
@@ -43,7 +45,7 @@ func SkipStrings(strs ...string) Skipper { return stringSkipper(strs) }
 func Skip(err error, skipper Skipper) error {
 	switch err := err.(type) {
 	case *Error:
-		n := make([]string, 0)
+		var n []string
 		for _, e := range err.Errors {
 			if !skipper.Skip(e) {
 				n = append(n, e)
@@ -68,4 +70,39 @@ func PackageDir(path string) (string, error) {
 		return "", err
 	}
 	return pkg.Dir, nil
+}
+
+type ExecResult struct {
+	Code   int
+	Stdout string
+	Stderr string
+}
+
+func Exec(cmd *exec.Cmd) (ExecResult, error) {
+	res := ExecResult{Code: -1}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return res, err
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return res, err
+	}
+	if err := cmd.Start(); err != nil {
+		return res, err
+	}
+	data, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		return res, fmt.Errorf("failed to read stdout: %v", err)
+	}
+	res.Stdout = string(data)
+	if data, err = ioutil.ReadAll(stderr); err != nil {
+		return res, fmt.Errorf("failed to read stderr: %v", err)
+	}
+	res.Stderr = string(data)
+	err = cmd.Wait()
+	if st, ok := cmd.ProcessState.Sys().(syscall.WaitStatus); ok {
+		res.Code = st.ExitStatus()
+	}
+	return res, err
 }
