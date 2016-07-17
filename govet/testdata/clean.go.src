@@ -1,0 +1,10 @@
+package govettest
+
+import (
+	"fmt"
+)
+
+// TestFunc is a test function
+func TestFunc() {
+	fmt.Println("This is a properly formatted file")
+}

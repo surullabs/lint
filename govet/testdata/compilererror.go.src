@@ -1,0 +1,10 @@
+package govettest
+
+import (
+	"fmt"
+)
+sfsff
+
+func TestFunc() {
+	fmt.Println("undocumented")
+}

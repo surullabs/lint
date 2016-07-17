@@ -1,0 +1,14 @@
+package gofmttest
+
+import (
+	"fmt"
+)
+
+func TestFunc() {
+    a := "test"
+    b := a
+    fmt.Sprintf("test")
+    return
+    fmt.Println("This is a poorly formatted file", b)
+}
+
