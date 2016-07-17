@@ -25,6 +25,6 @@ func Check(pkg string, args ...string) error {
 	}
 }
 
-func Checker(pkg string, args ...string) func(pkg string) error {
+func Checker(args ...string) func(pkg string) error {
 	return func(pkg string) error { return Check(pkg, args...) }
 }
