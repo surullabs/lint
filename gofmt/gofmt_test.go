@@ -18,13 +18,50 @@ func testUnformatted(err error) error {
 	return testutil.Diff(expectedUnformatted, unformattedRE.ReplaceAllString(errStr, "GOFMT_TMP_FOLDER\n"))
 }
 
+var tests = []testutil.StaticCheckTest{
+	{
+		Content: []byte(`package gofmttest
+
+import (
+	"fmt"
+)
+
+func TestFunc() {
+	fmt.Println("This is a properly formatted file")
+}
+`),
+		Validate: testutil.NoError,
+	},
+	{
+		Content: []byte(`package gofmttest
+
+import (
+	"fmt"
+)
+
+func TestFunc() {
+  fmt.Println("This is a poorly formatted file")
+}
+
+type A struct {
+    A string
+    Long string
+}
+`),
+		Validate: testUnformatted,
+	},
+	{
+		Content: []byte(`package gofmttest
+
+blah`),
+		Validate: testutil.HasSuffix("expected declaration, found 'IDENT' blah\n"),
+	},
+}
+
 func TestGoFmt(t *testing.T) {
-	check := func(pkg string, _ interface{}) error { return Check(pkg) }
-	testutil.Test(t, "gofmttest", check, []testutil.StaticCheckTest{
-		{"testdata/clean.go.src", nil, testutil.NoError},
-		{"testdata/unformatted.go.src", nil, testUnformatted},
-		{"testdata/compilererror.go.src", nil, testutil.HasSuffix("expected declaration, found 'IDENT' blah\n")},
-	})
+	testutil.Test(t, "gofmttest", func(pkg string, _ interface{}) error {
+		return Check(pkg)
+	}, tests)
 }
 
 const expectedUnformatted = `File not formatted: diff GOFMT_TMP_FOLDER

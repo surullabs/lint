@@ -1,9 +1,0 @@
-package gofmttest
-
-import (
-	"fmt"
-)
-
-func TestFunc() {
-	fmt.Println("This is a properly formatted file")
-}

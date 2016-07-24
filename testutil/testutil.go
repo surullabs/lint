@@ -13,13 +13,14 @@ import (
 
 type StaticCheckTest struct {
 	File     string
+	Content  []byte
 	Args     interface{}
 	Validate func(err error) error
 }
 
 func (s StaticCheckTest) Test(pkg string, check func(string, interface{}) error) error {
 	tmp, err := fakegopath.NewTemporaryWithFiles(pkg, []fakegopath.SourceFile{
-		{Src: s.File, Dest: filepath.Join(pkg, "file.go")},
+		{Src: s.File, Content: s.Content, Dest: filepath.Join(pkg, "file.go")},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create temporary go path: %v", err)

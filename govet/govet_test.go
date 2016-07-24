@@ -27,11 +27,59 @@ func testVetError(err error) error {
 	return nil
 }
 
+var tests = []testutil.StaticCheckTest{
+	{
+		Content: []byte(`package govettest
+import (
+	"fmt"
+)
+
+// TestFunc is a test function
+func TestFunc() {
+	fmt.Println("This is a properly formatted file")
+}
+`),
+		Validate: testutil.NoError,
+	},
+	{
+		Content: []byte(`package govettest
+
+import (
+	"fmt"
+)
+sfsff
+
+func TestFunc() {
+	fmt.Println("undocumented")
+}
+`),
+		Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
+	},
+	{
+		Content: []byte(`package gofmttest
+
+import (
+	"fmt"
+)
+
+func TestFunc() {
+    a := "test"
+    b := a
+    fmt.Sprintf("test")
+    return
+    fmt.Println("This is a poorly formatted file", b)
+}
+`),
+		Validate: testVetError,
+	},
+}
+
 func TestGoVet(t *testing.T) {
-	check := func(pkg string, args interface{}) error { return Check(pkg, args.([]string)...) }
-	testutil.Test(t, "govettest", check, []testutil.StaticCheckTest{
-		{"testdata/clean.go.src", []string{}, testutil.NoError},
-		{"testdata/compilererror.go.src", []string{}, testutil.HasSuffix("expected declaration, found 'IDENT' sfsff")},
-		{"testdata/veterrors.go.src", []string{}, testVetError},
-	})
+	testutil.Test(t, "govettest", func(pkg string, args interface{}) error {
+		var a []string
+		if args != nil {
+			a = args.([]string)
+		}
+		return Check(pkg, a...)
+	}, tests)
 }
