@@ -5,7 +5,7 @@ import (
 	"go/build"
 	"io/ioutil"
 	"os/exec"
-	"runtime"
+	"reflect"
 	"strings"
 	"syscall"
 )
@@ -16,6 +16,13 @@ type Error struct {
 
 func (e *Error) Error() string {
 	return strings.Join(e.Errors, "\n")
+}
+
+func (e *Error) AsError() error {
+	if e.Errors == nil {
+		return nil
+	}
+	return e
 }
 
 type Skipper interface {
@@ -96,32 +103,33 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	return res, err
 }
 
-type Errorer interface {
-	Error(args ...interface{})
+// Checker performs a static check of a directory
+type Checker interface {
+	// Check performs a static check of all files in a directory
+	Check(dir string) error
 }
 
-type CheckFn func(pkg string) error
+// CheckFunc is a function that implements Checker
+type CheckFunc func(dir string) error
 
-func Check(t Errorer, pkg string, fns ...CheckFn) {
-	var buf [100]uintptr
-	for _, fn := range fns {
-		err := fn(pkg)
-		if err == nil {
-			continue
-		}
+func (c CheckFunc) Check(dir string) error { return c(dir) }
 
-		b := buf[:100]
-		num := runtime.Callers(1, b)
-		frames := runtime.CallersFrames(b)
-		lines := make([]string, 0, num+1)
-		lines = append(lines, err.Error())
-		for frame, more := frames.Next(); more; frame, more = frames.Next() {
-			if frame.Function == "" {
+func Chain(checkers ...Checker) Checker {
+	return CheckFunc(func(dir string) error {
+		errs := &Error{}
+		for _, checker := range checkers {
+			name := reflect.TypeOf(checker).String()
+			switch err := checker.Check(dir).(type) {
+			case nil:
 				continue
+			case *Error:
+				for _, e := range err.Errors {
+					errs.Errors = append(errs.Errors, name+": "+e)
+				}
+			default:
+				errs.Errors = append(errs.Errors, name+": "+err.Error())
 			}
-			lines = append(lines, fmt.Sprintf("%s:%d: %s", frame.File, frame.Line, frame.Function))
 		}
-
-		t.Error(strings.Join(lines, "\n"))
-	}
+		return errs.AsError()
+	})
 }

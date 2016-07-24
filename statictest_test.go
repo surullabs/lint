@@ -9,5 +9,7 @@ import (
 )
 
 func TestStaticChecks(t *testing.T) {
-	statictest.Check(t, ".", gofmt.Check, govet.Checker())
+	if err := statictest.Chain(gofmt.Check{}, govet.Check{}).Check("."); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -9,34 +9,35 @@ import (
 
 	"github.com/pmezard/go-difflib/difflib"
 	"github.com/sridharv/fakegopath"
+	"github.com/surullabs/statictest"
 )
 
 type StaticCheckTest struct {
 	File     string
 	Content  []byte
-	Args     interface{}
+	Checker  statictest.Checker
 	Validate func(err error) error
 }
 
-func (s StaticCheckTest) Test(pkg string, check func(string, interface{}) error) error {
-	tmp, err := fakegopath.NewTemporaryWithFiles(pkg, []fakegopath.SourceFile{
-		{Src: s.File, Content: s.Content, Dest: filepath.Join(pkg, "file.go")},
+func (s StaticCheckTest) Test(dir string) error {
+	tmp, err := fakegopath.NewTemporaryWithFiles(dir, []fakegopath.SourceFile{
+		{Src: s.File, Content: s.Content, Dest: filepath.Join(dir, "file.go")},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create temporary go path: %v", err)
 	}
 	defer tmp.Reset()
-	return s.Validate(check(pkg, s.Args))
+	return s.Validate(s.Checker.Check(dir))
 }
 
 type Errorer interface {
 	Error(args ...interface{})
 }
 
-func Test(t Errorer, pkg string, check func(string, interface{}) error, tests []StaticCheckTest) {
-	for _, test := range tests {
-		if err := test.Test(pkg, check); err != nil {
-			t.Error(test.File, test.Args, err)
+func Test(t Errorer, pkg string, tests []StaticCheckTest) {
+	for i, test := range tests {
+		if err := test.Test(pkg); err != nil {
+			t.Error("Check", i, err)
 		}
 	}
 }

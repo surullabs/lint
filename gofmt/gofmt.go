@@ -3,11 +3,15 @@ package gofmt
 import (
 	"bytes"
 	"fmt"
-	"github.com/surullabs/statictest"
 	"os/exec"
+
+	"github.com/surullabs/statictest"
 )
 
-func Check(pkg string) error {
+type Check struct {
+}
+
+func (Check) Check(pkg string) error {
 	dir, err := statictest.PackageDir(pkg)
 	if err != nil {
 		return fmt.Errorf("gofmt-check: failed to read package dir: %v", err)
