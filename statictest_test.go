@@ -6,11 +6,20 @@ import (
 	"github.com/surullabs/statictest"
 	"github.com/surullabs/statictest/gofmt"
 	"github.com/surullabs/statictest/golint"
+	"github.com/surullabs/statictest/gosimple"
+	"github.com/surullabs/statictest/gostaticcheck"
 	"github.com/surullabs/statictest/govet"
 )
 
 func TestStaticChecks(t *testing.T) {
-	if err := statictest.Chain(gofmt.Check{}, govet.Shadow, golint.Check{}).Check("."); err != nil {
+	checks := statictest.Chain(
+		gofmt.Check{},
+		govet.Shadow,
+		golint.Check{},
+		gosimple.Check{},
+		gostaticcheck.Check{},
+	)
+	if err := checks.Check("."); err != nil {
 		t.Fatal(err)
 	}
 }
