@@ -3,7 +3,9 @@ package golint
 import (
 	"testing"
 
+	"github.com/surullabs/statictest"
 	"github.com/surullabs/statictest/testutil"
+	"strings"
 )
 
 func TestGolint(t *testing.T) {
@@ -50,6 +52,23 @@ func TestFunc() {
 `),
 			Validate: testutil.HasSuffix(
 				"file.go:6:1: exported function TestFunc should have comment or be unexported"),
+		},
+		{
+			Checker: statictest.Skip(Check{}, statictest.StringSkipper{
+				Strings: []string{
+					"exported function TestFunc should have comment or be unexported",
+				},
+				Matcher: strings.HasSuffix,
+			}),
+			Content: []byte(`package golinttest
+import (
+	"fmt"
+)
+
+func TestFunc() {
+}
+`),
+			Validate: testutil.NoError,
 		},
 	},
 	)

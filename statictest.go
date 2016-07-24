@@ -32,35 +32,55 @@ type Skipper interface {
 	Skip(string) bool
 }
 
-type stringSkipper []string
+// StringSkipper implements Skipper and skips an error if Matcher(err, str) == true for
+// any of Strings
+type StringSkipper struct {
+	Strings []string
+	Matcher func(err, str string) bool
+}
 
-func (s stringSkipper) Skip(check string) bool {
-	for _, str := range s {
-		if str == check {
+// Skip returns true if Matcher(check, str) == true for any of Strings.
+func (s StringSkipper) Skip(check string) bool {
+	for _, str := range s.Strings {
+		if s.Matcher(check, str) {
 			return true
 		}
 	}
 	return false
 }
 
-// SkipStrings returns a Skipper which will skip an error if the error is equal to
-// any of strs.
-func SkipStrings(strs ...string) Skipper { return stringSkipper(strs) }
-
-// Skip removes errors skipped by skipper. err is returned unchanged if it is not
-// of type *Error.
-func Skip(err error, skipper Skipper) error {
-	switch err := err.(type) {
-	case *Error:
-		var n []string
-		for _, e := range err.Errors {
-			if !skipper.Skip(e) {
-				n = append(n, e)
-			}
+func skip(check string, skippers []Skipper) bool {
+	for _, s := range skippers {
+		if s.Skip(check) {
+			return true
 		}
-		err.Errors = n
 	}
-	return err
+	return false
+}
+
+// Skip executes checkers and filters errors skipped by the provided skippers. If checker returns
+// an Error instance the filters are applied on Errors.Errors
+func Skip(checker Checker, skippers ...Skipper) Checker {
+	return CheckFunc(func(pkg string) error {
+		switch err := checker.Check(pkg).(type) {
+		case nil:
+			return nil
+		case *Error:
+			var n []string
+			for _, e := range err.Errors {
+				if !skip(e, skippers) {
+					n = append(n, e)
+				}
+			}
+			err.Errors = n
+			return err.AsError()
+		default:
+			if skip(err.Error(), skippers) {
+				return nil
+			}
+			return err
+		}
+	})
 }
 
 // PackageDir returns the directory containing a package.
