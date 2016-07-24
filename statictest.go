@@ -74,6 +74,16 @@ type ExecResult struct {
 	Stderr string
 }
 
+func InstallMissing(bin, importPath string) error {
+	if _, err := exec.LookPath(bin); err == nil {
+		return nil
+	}
+	if data, err := exec.Command("go", "get", importPath).CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to install %s: %v: %s", importPath, err, string(data))
+	}
+	return nil
+}
+
 func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	res := ExecResult{Code: -1}
 	stdout, err := cmd.StdoutPipe()
