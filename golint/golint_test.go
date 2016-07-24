@@ -37,7 +37,7 @@ func TestFunc() {
 	fmt.Println("undocumented")
 }
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
 			Checker: Check{},

@@ -104,6 +104,21 @@ func InstallMissing(bin, importPath string) error {
 	return nil
 }
 
+// Lint runs the linter specified by bin for pkg, installing it if necessary using
+// go get importPath.
+func Lint(bin, importPath, pkg string) error {
+	if err := InstallMissing(bin, importPath); err != nil {
+		return err
+	}
+	result, _ := Exec(exec.Command(bin, pkg))
+	str := strings.TrimSpace(
+		strings.TrimSpace(result.Stdout) + "\n" + strings.TrimSpace(result.Stderr))
+	if str == "" {
+		return nil
+	}
+	return &Error{Errors: strings.Split(str, "\n")}
+}
+
 // ExecResult holds a status code, stdout and stderr for a single command execution.
 type ExecResult struct {
 	Code   int
