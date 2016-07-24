@@ -3,20 +3,8 @@ package gofmt
 import (
 	"testing"
 
-	"regexp"
-
 	"github.com/surullabs/statictest/testutil"
 )
-
-var unformattedRE = regexp.MustCompile("/var/[^ ]*gofmt(test)?[0-9]+.*\n")
-
-func testUnformatted(err error) error {
-	errStr := ""
-	if err != nil {
-		errStr = err.Error()
-	}
-	return testutil.Diff(expectedUnformatted, unformattedRE.ReplaceAllString(errStr, "GOFMT_TMP_FOLDER\n"))
-}
 
 func TestGoFmt(t *testing.T) {
 	testutil.Test(t, "gofmttest", []testutil.StaticCheckTest{
@@ -51,17 +39,16 @@ type A struct {
     Long string
 }
 `),
-			Validate: testUnformatted,
+			Validate: testutil.MatchesRegexp("^File not formatted.*gofmttest/file.go"),
 		},
 		{
 			Checker: Check{},
 			Content: []byte(`package gofmttest
 
-blah`),
-			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' blah\n"),
+		blah`),
+			Validate: testutil.Contains("expected declaration, found 'IDENT' blah"),
 		},
 	})
-
 }
 
 const expectedUnformatted = `File not formatted: diff GOFMT_TMP_FOLDER

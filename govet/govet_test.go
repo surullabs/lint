@@ -21,7 +21,7 @@ func testVetError(err error) error {
 	if !strings.HasSuffix(skippable.Errors[0], "unreachable code") {
 		return err
 	}
-	if !strings.HasSuffix(skippable.Errors[1], "result of fmt.Sprintf call not used") {
+	if !strings.Contains(skippable.Errors[1], "result of fmt.Sprintf call not used") {
 		return err
 	}
 	return nil
@@ -56,7 +56,7 @@ func TestFunc() {
 	fmt.Println("undocumented")
 }
 `),
-			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
+			Validate: testutil.Contains("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
 			Checker: Check{},

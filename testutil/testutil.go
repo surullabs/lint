@@ -10,6 +10,7 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 	"github.com/sridharv/fakegopath"
 	"github.com/surullabs/statictest"
+	"regexp"
 )
 
 type StaticCheckTest struct {
@@ -51,6 +52,20 @@ func HasSuffix(suffix string) func(err error) error {
 		}
 		if !strings.HasSuffix(err.Error(), suffix) {
 			return err
+		}
+		return nil
+	}
+}
+
+func MatchesRegexp(re string) func (err error) error {
+	return func (err error) error {
+		if err == nil {
+			return fmt.Errorf("no error found when expecting error matching RE %s", re)
+		}
+		if matches, matchErr := regexp.MatchString(re, err.Error()); matchErr != nil {
+			return matchErr
+		} else if !matches {
+			return fmt.Errorf("error %v does not match re %s", err, re)
 		}
 		return nil
 	}

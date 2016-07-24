@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"go/build"
 	"io/ioutil"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"syscall"
@@ -58,8 +60,9 @@ func skip(check string, skippers []Skipper) bool {
 	return false
 }
 
-// Skip executes checkers and filters errors skipped by the provided skippers. If checker returns
-// an Error instance the filters are applied on Errors.Errors
+// Skip returns a Checker that executes checkers and filters errors skipped by
+// the provided skippers. If checker returns an Error instance the filters are
+// applied on Errors.Errors
 func Skip(checker Checker, skippers ...Skipper) Checker {
 	return CheckFunc(func(pkg string) error {
 		switch err := checker.Check(pkg).(type) {
@@ -157,7 +160,9 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	return res, err
 }
 
-// Checker performs a static check of a package
+// Checker performs a static check of a single package. pkg must be a properly
+// resolved import path. The behaviour for relative import paths is undefined.
+// Use Apply(pkg, checker...) to perform the actual static checks.
 type Checker interface {
 	// Check performs a static check of all files in a package
 	Check(pkg string) error
@@ -169,25 +174,78 @@ type CheckFunc func(pkg string) error
 // Check calls the CheckFunc with pkg
 func (c CheckFunc) Check(pkg string) error { return c(pkg) }
 
-// Chain chains the provided checkers into a single checker. The returned checker
-// will execute all checkers in the order provided. Errors are collected into an
+// Apply applies the checkers to pkg. If pkg is a relative import path
+// it will be resolved before being passed to the checker. checkers will be
+// executed in the order provided. Errors are collected into an
 // Error instance and returned.
-func Chain(checkers ...Checker) Checker {
-	return CheckFunc(func(dir string) error {
-		errs := &Error{}
-		for _, checker := range checkers {
-			name := reflect.TypeOf(checker).String()
-			switch err := checker.Check(dir).(type) {
-			case nil:
-				continue
-			case *Error:
-				for _, e := range err.Errors {
-					errs.Errors = append(errs.Errors, name+": "+e)
-				}
-			default:
-				errs.Errors = append(errs.Errors, name+": "+err.Error())
+func Apply(pkg string, checkers ...Checker) error {
+	pkg, err := resolvePackage(pkg)
+	if err != nil {
+		return err
+	}
+	errs := &Error{}
+	for _, checker := range checkers {
+		name := reflect.TypeOf(checker).String()
+		switch err := checker.Check(pkg).(type) {
+		case nil:
+			continue
+		case *Error:
+			for _, e := range err.Errors {
+				errs.Errors = append(errs.Errors, name+": "+e)
 			}
+		default:
+			errs.Errors = append(errs.Errors, name+": "+err.Error())
 		}
-		return errs.AsError()
-	})
+	}
+	return errs.AsError()
+}
+
+func resolvePackage(dir string) (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	b, err := build.Import(dir, wd, build.FindOnly)
+	if err != nil {
+		return "", err
+	}
+	return b.ImportPath, nil
+}
+
+// Files returns all files in a package
+func Files(pkg string) ([]string, error) {
+	dir, err := PackageDir(pkg)
+	if err != nil {
+		return nil, err
+	}
+	entries, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	files, i := make([]string, len(entries)), 0
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		files[i] = filepath.Join(dir, entry.Name())
+		i++
+	}
+	return files[:i], nil
+}
+
+// GoFiles returns all .go files in a package.
+func GoFiles(pkg string) ([]string, error) {
+	files, err := Files(pkg)
+	if err != nil {
+		return nil, err
+	}
+	gofiles, i := make([]string, len(files)), 0
+	for _, f := range files {
+		if !strings.HasSuffix(f, ".go") {
+			continue
+		}
+		gofiles[i] = f
+		i++
+	}
+	return gofiles[:i], nil
 }

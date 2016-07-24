@@ -12,14 +12,14 @@ import (
 )
 
 func TestStaticChecks(t *testing.T) {
-	checks := statictest.Chain(
+	err := statictest.Apply(".",
 		gofmt.Check{},
 		govet.Shadow,
 		golint.Check{},
 		gosimple.Check{},
 		gostaticcheck.Check{},
 	)
-	if err := checks.Check("."); err != nil {
+	if err != nil {
 		t.Fatal(err)
 	}
 }

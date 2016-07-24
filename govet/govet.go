@@ -15,11 +15,11 @@ type Check struct {
 var Shadow = Check{Args: []string{"--all", "--shadow"}}
 
 func (c Check) Check(pkg string) error {
-	dir, err := statictest.PackageDir(pkg)
+	files, err := statictest.GoFiles(pkg)
 	if err != nil {
 		return err
 	}
-	args := append([]string{"tool", "vet"}, append(c.Args, dir)...)
+	args := append([]string{"tool", "vet"}, append(c.Args, files...)...)
 	res, err := statictest.Exec(exec.Command("go", args...))
 	if err == nil {
 		return nil
