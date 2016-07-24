@@ -10,6 +10,7 @@ import (
 	"syscall"
 )
 
+// Error implements error and holds a list of failures.
 type Error struct {
 	Errors []string
 }
@@ -18,6 +19,7 @@ func (e *Error) Error() string {
 	return strings.Join(e.Errors, "\n")
 }
 
+// AsError returns nil if Errors is empty or the pointer to Error otherwise.
 func (e *Error) AsError() error {
 	if e.Errors == nil {
 		return nil
@@ -25,6 +27,7 @@ func (e *Error) AsError() error {
 	return e
 }
 
+// Skipper is used to skip errors
 type Skipper interface {
 	Skip(string) bool
 }
@@ -60,6 +63,7 @@ func Skip(err error, skipper Skipper) error {
 	return err
 }
 
+// PackageDir returns the directory containing a package.
 func PackageDir(path string) (string, error) {
 	pkg, err := build.Import(path, ".", build.FindOnly)
 	if err != nil {
@@ -68,12 +72,8 @@ func PackageDir(path string) (string, error) {
 	return pkg.Dir, nil
 }
 
-type ExecResult struct {
-	Code   int
-	Stdout string
-	Stderr string
-}
-
+// InstallMissing runs go get importPath if bin cannot be found in the directories
+// contained in the PATH environment variable.
 func InstallMissing(bin, importPath string) error {
 	if _, err := exec.LookPath(bin); err == nil {
 		return nil
@@ -84,6 +84,15 @@ func InstallMissing(bin, importPath string) error {
 	return nil
 }
 
+// ExecResult holds a status code, stdout and stderr for a single command execution.
+type ExecResult struct {
+	Code   int
+	Stdout string
+	Stderr string
+}
+
+// Exec executes cmd and results exit code, stdout and stderr of the result. It
+// additionally returns and error if the status code is not 0.
 func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	res := ExecResult{Code: -1}
 	stdout, err := cmd.StdoutPipe()
@@ -113,17 +122,21 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	return res, err
 }
 
-// Checker performs a static check of a directory
+// Checker performs a static check of a package
 type Checker interface {
-	// Check performs a static check of all files in a directory
-	Check(dir string) error
+	// Check performs a static check of all files in a package
+	Check(pkg string) error
 }
 
 // CheckFunc is a function that implements Checker
-type CheckFunc func(dir string) error
+type CheckFunc func(pkg string) error
 
-func (c CheckFunc) Check(dir string) error { return c(dir) }
+// Check calls the CheckFunc with pkg
+func (c CheckFunc) Check(pkg string) error { return c(pkg) }
 
+// Chain chains the provided checkers into a single checker. The returned checker
+// will execute all checkers in the order provided. Errors are collected into an
+// Error instance and returned.
 func Chain(checkers ...Checker) Checker {
 	return CheckFunc(func(dir string) error {
 		errs := &Error{}
