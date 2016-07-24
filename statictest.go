@@ -84,7 +84,7 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	if err != nil {
 		return res, err
 	}
-	if err := cmd.Start(); err != nil {
+	if err = cmd.Start(); err != nil {
 		return res, err
 	}
 	data, err := ioutil.ReadAll(stdout)

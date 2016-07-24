@@ -56,6 +56,18 @@ func HasSuffix(suffix string) func(err error) error {
 	}
 }
 
+func Contains(str string) func(err error) error {
+	return func(err error) error {
+		if err == nil {
+			return fmt.Errorf("no error found when expecting error containing %s", str)
+		}
+		if !strings.Contains(err.Error(), str) {
+			return err
+		}
+		return nil
+	}
+}
+
 func Diff(expected, actual string) error {
 	if expected == actual {
 		return nil

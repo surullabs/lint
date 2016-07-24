@@ -12,6 +12,8 @@ type Check struct {
 	Args []string
 }
 
+var Shadow = Check{Args: []string{"--all", "--shadow"}}
+
 func (c Check) Check(pkg string) error {
 	dir, err := statictest.PackageDir(pkg)
 	if err != nil {

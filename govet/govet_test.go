@@ -76,6 +76,24 @@ func TestFunc() {
 `),
 			Validate: testVetError,
 		},
+		{
+			Checker: Shadow,
+			Content: []byte(`package gofmttest
+
+import (
+	"fmt"
+)
+
+func TestFunc() (err error) {
+    err = fmt.Println("another")
+    if err != nil {
+    	err := fmt.Errorf("some error: %v", err)
+    }
+    return err
+}
+`),
+			Validate: testutil.Contains(`declaration of "err" shadows declaration at`),
+		},
 	})
 
 }
