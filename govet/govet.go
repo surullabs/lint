@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/surullabs/statictest"
+	"github.com/surullabs/statictest/checkers"
 )
 
 // Check implements a statictest.Checker for the govet command.
@@ -15,12 +16,12 @@ type Check struct {
 var Shadow = Check{Args: []string{"--all", "--shadow"}}
 
 func (c Check) Check(pkg string) error {
-	files, err := statictest.GoFiles(pkg)
+	files, err := checkers.GoFiles(pkg)
 	if err != nil {
 		return err
 	}
 	args := append([]string{"tool", "vet"}, append(c.Args, files...)...)
-	res, err := statictest.Exec(exec.Command("go", args...))
+	res, err := checkers.Exec(exec.Command("go", args...))
 	if err == nil {
 		return nil
 	}

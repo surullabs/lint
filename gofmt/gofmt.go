@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
-	"github.com/surullabs/statictest"
+	"github.com/surullabs/statictest/checkers"
 )
 
 type Check struct {
 }
 
 func (Check) Check(pkg string) error {
-	files, err := statictest.GoFiles(pkg)
+	files, err := checkers.GoFiles(pkg)
 	if err != nil {
 		return err
 	}
