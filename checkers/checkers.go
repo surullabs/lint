@@ -13,8 +13,7 @@ import (
 	"github.com/surullabs/statictest"
 )
 
-// PackageDir returns the directory containing a package.
-func PackageDir(path string) (string, error) {
+func packageDir(path string) (string, error) {
 	pkg, err := build.Import(path, ".", build.FindOnly)
 	if err != nil {
 		return "", err
@@ -34,13 +33,20 @@ func InstallMissing(bin, importPath string) error {
 	return nil
 }
 
-// Lint runs the linter specified by bin for pkg, installing it if necessary using
-// go get importPath.
-func Lint(bin, importPath, pkg string) error {
+// LintAsFiles runs the linter specified by bin for each package in pkgs.
+// A list of files for each package is computed and passed to the linter.
+// The linter is installedif necessary using go get importPath.
+//
+// Any test files are ignored.
+func LintAsFiles(bin, importPath string, pkgs []string) error {
 	if err := InstallMissing(bin, importPath); err != nil {
 		return err
 	}
-	result, _ := Exec(exec.Command(bin, pkg))
+	files, err := GoFiles(pkgs...)
+	if err != nil {
+		return err
+	}
+	result, _ := Exec(exec.Command(bin, files...))
 	str := strings.TrimSpace(
 		strings.TrimSpace(result.Stdout) + "\n" + strings.TrimSpace(result.Stderr))
 	if str == "" {
@@ -87,36 +93,41 @@ func Exec(cmd *exec.Cmd) (ExecResult, error) {
 	return res, err
 }
 
-// Files returns all files in a package
-func Files(pkg string) ([]string, error) {
-	dir, err := PackageDir(pkg)
-	if err != nil {
-		return nil, err
-	}
-	entries, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	files, i := make([]string, len(entries)), 0
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
+// Files returns all files in pkgs
+func Files(pkgs ...string) ([]string, error) {
+	var res []string
+	for _, pkg := range pkgs {
+
+		dir, err := packageDir(pkg)
+		if err != nil {
+			return nil, err
 		}
-		files[i] = filepath.Join(dir, entry.Name())
-		i++
+		entries, err := ioutil.ReadDir(dir)
+		if err != nil {
+			return nil, err
+		}
+		files, i := make([]string, len(entries)), 0
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			files[i] = filepath.Join(dir, entry.Name())
+			i++
+		}
+		res = append(res, files[:i]...)
 	}
-	return files[:i], nil
+	return res, nil
 }
 
-// GoFiles returns all .go files in a package.
-func GoFiles(pkg string) ([]string, error) {
-	files, err := Files(pkg)
+// GoFiles returns all .go files in pkgs.
+func GoFiles(pkg ...string) ([]string, error) {
+	files, err := Files(pkg...)
 	if err != nil {
 		return nil, err
 	}
 	gofiles, i := make([]string, len(files)), 0
 	for _, f := range files {
-		if !strings.HasSuffix(f, ".go") {
+		if !strings.HasSuffix(f, ".go") || strings.HasSuffix(f, "_test.go"){
 			continue
 		}
 		gofiles[i] = f

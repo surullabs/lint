@@ -61,8 +61,8 @@ func skip(check string, skippers []Skipper) bool {
 // applied on Errors.Errors. Each skipper is run in the order provided and a single
 // skipper returning true will result in that error being skipped.
 func Skip(checker Checker, skippers ...Skipper) Checker {
-	return CheckFunc(func(pkg string) error {
-		switch err := checker.Check(pkg).(type) {
+	return CheckFunc(func(pkg ...string) error {
+		switch err := checker.Check(pkg...).(type) {
 		case nil:
 			return nil
 		case *Error:
@@ -83,20 +83,19 @@ func Skip(checker Checker, skippers ...Skipper) Checker {
 	})
 }
 
-// Checker performs a static check of a single package.
+// Checker performs a static check of a list of packages.
 // Use Apply(pkg, checker...) to perform the actual static checks.
 type Checker interface {
-	// Check performs a static check of all files in pkg, which must be a fully
-	// qualified import path. If pkg is a relative import path an error must be
-	// returned.
-	Check(pkg string) error
+	// Check performs a static check of all files in pkgs, which must all be fully
+	// qualified import paths. Relative import paths will result in an error.
+	Check(pkg ...string) error
 }
 
 // CheckFunc is a function that implements Checker
-type CheckFunc func(pkg string) error
+type CheckFunc func(pkgs ...string) error
 
-// Check calls c with pkg
-func (c CheckFunc) Check(pkg string) error { return c(pkg) }
+// Check calls c with pkgs
+func (c CheckFunc) Check(pkgs ...string) error { return c(pkgs...) }
 
 // Group returns a Checker that applies each of checkers in the order provided.
 //
@@ -114,11 +113,11 @@ func (c CheckFunc) Check(pkg string) error { return c(pkg) }
 // separately in the final returned error. A checker is not shorted-circuited
 // by a previous checker returning an error.
 func Group(checkers ...Checker) Checker {
-	return CheckFunc(func(pkg string) error {
+	return CheckFunc(func(pkgs ...string) error {
 		errs := &Error{}
 		for _, checker := range checkers {
 			name := reflect.TypeOf(checker).String()
-			switch err := checker.Check(pkg).(type) {
+			switch err := checker.Check(pkgs...).(type) {
 			case nil:
 				continue
 			case *Error:
@@ -135,22 +134,26 @@ func Group(checkers ...Checker) Checker {
 
 // Apply applies checker to pkg. If pkg is a relative import path
 // it will be resolved before being passed to checker.
-func Apply(pkg string, checker Checker) error {
-	pkg, err := resolvePackage(pkg)
+func Apply(checker Checker, pkgs ...string) error {
+	pkgs, err := resolvePackages(pkgs)
 	if err != nil {
 		return err
 	}
-	return checker.Check(pkg)
+	return checker.Check(pkgs...)
 }
 
-func resolvePackage(dir string) (string, error) {
+func resolvePackages(raw []string) ([]string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	b, err := build.Import(dir, wd, build.FindOnly)
-	if err != nil {
-		return "", err
+	var resolved []string
+	for _, d := range raw {
+		b, err := build.Import(d, wd, build.FindOnly)
+		if err != nil {
+			return nil, err
+		}
+		resolved = append(resolved, b.ImportPath)
 	}
-	return b.ImportPath, nil
+	return resolved, nil
 }

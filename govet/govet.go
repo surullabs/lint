@@ -15,8 +15,8 @@ type Check struct {
 
 var Shadow = Check{Args: []string{"--all", "--shadow"}}
 
-func (c Check) Check(pkg string) error {
-	files, err := checkers.GoFiles(pkg)
+func (c Check) Check(pkgs ...string) error {
+	files, err := checkers.GoFiles(pkgs...)
 	if err != nil {
 		return err
 	}

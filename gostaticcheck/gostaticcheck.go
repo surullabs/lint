@@ -6,7 +6,7 @@ import "github.com/surullabs/statictest/checkers"
 type Check struct {
 }
 
-// Check runs gostaticcheck for pkg
-func (Check) Check(pkg string) error {
-	return checkers.Lint("staticcheck", "honnef.co/go/staticcheck/cmd/staticcheck", pkg)
+// Check runs gostaticcheck for pkgs
+func (Check) Check(pkgs ...string) error {
+	return checkers.LintAsFiles("staticcheck", "honnef.co/go/staticcheck/cmd/staticcheck", pkgs)
 }

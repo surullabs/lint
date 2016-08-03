@@ -7,6 +7,6 @@ type Check struct {
 }
 
 // Check runs golint for pkg
-func (Check) Check(pkg string) error {
-	return checkers.Lint("golint", "github.com/golang/lint/golint", pkg)
+func (Check) Check(pkgs ...string) error {
+	return checkers.LintAsFiles("golint", "github.com/golang/lint/golint", pkgs)
 }

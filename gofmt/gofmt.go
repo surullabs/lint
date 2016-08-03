@@ -10,8 +10,8 @@ import (
 type Check struct {
 }
 
-func (Check) Check(pkg string) error {
-	files, err := checkers.GoFiles(pkg)
+func (Check) Check(pkgs ...string) error {
+	files, err := checkers.GoFiles(pkgs...)
 	if err != nil {
 		return err
 	}
