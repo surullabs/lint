@@ -7,10 +7,10 @@ import (
 
 	"strings"
 
-	"github.com/pmezard/go-difflib/difflib"
+	"regexp"
+
 	"github.com/sridharv/fakegopath"
 	"github.com/surullabs/statictest"
-	"regexp"
 )
 
 type StaticCheckTest struct {
@@ -57,8 +57,8 @@ func HasSuffix(suffix string) func(err error) error {
 	}
 }
 
-func MatchesRegexp(re string) func (err error) error {
-	return func (err error) error {
+func MatchesRegexp(re string) func(err error) error {
+	return func(err error) error {
 		if err == nil {
 			return fmt.Errorf("no error found when expecting error matching RE %s", re)
 		}
@@ -81,22 +81,4 @@ func Contains(str string) func(err error) error {
 		}
 		return nil
 	}
-}
-
-func Diff(expected, actual string) error {
-	if expected == actual {
-		return nil
-	}
-	diff := difflib.UnifiedDiff{
-		A:        difflib.SplitLines(expected),
-		B:        difflib.SplitLines(actual),
-		FromFile: "Golden",
-		ToFile:   "Actual",
-		Context:  3,
-	}
-	text, err := difflib.GetUnifiedDiffString(diff)
-	if err != nil {
-		text = fmt.Sprintf("diff error: %v", err)
-	}
-	return fmt.Errorf(text)
 }
