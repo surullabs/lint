@@ -13,8 +13,11 @@ type Check struct {
 	Args []string
 }
 
+// Shadow is a Checker that runs
+// 	 go tool vet --all --shadow.
 var Shadow = Check{Args: []string{"--all", "--shadow"}}
 
+// Check runs go tool vet for pkgs.
 func (c Check) Check(pkgs ...string) error {
 	files, err := checkers.GoFiles(pkgs...)
 	if err != nil {

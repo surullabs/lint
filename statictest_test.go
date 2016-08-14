@@ -19,7 +19,7 @@ func TestStaticChecks(t *testing.T) {
 		gosimple.Check{},
 		gostaticcheck.Check{},
 	)
-	if err := statictest.Verify(basic, "."); err != nil {
+	if err := basic.Check("./..."); err != nil {
 		t.Fatal(err)
 	}
 }

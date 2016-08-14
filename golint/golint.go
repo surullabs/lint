@@ -6,7 +6,7 @@ import "github.com/surullabs/statictest/checkers"
 type Check struct {
 }
 
-// Check runs golint for pkg
+// Check implements statictest.Checker for golint.
 func (Check) Check(pkgs ...string) error {
-	return checkers.LintAsFiles("golint", "github.com/golang/lint/golint", pkgs)
+	return checkers.Lint("golint", "github.com/golang/lint/golint", pkgs)
 }

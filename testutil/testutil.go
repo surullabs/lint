@@ -1,3 +1,4 @@
+// Package testutil contains methods to test checkers.
 package testutil
 
 import (
@@ -11,30 +12,41 @@ import (
 
 	"github.com/sridharv/fakegopath"
 	"github.com/surullabs/statictest"
+	"github.com/surullabs/statictest/checkers"
 )
 
+// StaticCheckTest is a table-driven test for a checker.
 type StaticCheckTest struct {
-	File     string
-	Content  []byte
-	Checker  statictest.Checker
+	// File is a src file to use instead of Content.
+	File string
+	// Content is the content of the created file.
+	Content []byte
+	// Checker is the checker to run on the package.
+	Checker statictest.Checker
+	// Validate returns nil if err is what is expected.
 	Validate func(err error) error
 }
 
-func (s StaticCheckTest) Test(dir string) error {
-	tmp, err := fakegopath.NewTemporaryWithFiles(dir, []fakegopath.SourceFile{
-		{Src: s.File, Content: s.Content, Dest: filepath.Join(dir, "file.go")},
+// Test runs the test for pkg.
+func (s StaticCheckTest) Test(pkg string) error {
+	checkers.Unload(pkg)
+	tmp, err := fakegopath.NewTemporaryWithFiles(pkg, []fakegopath.SourceFile{
+		{Src: s.File, Content: s.Content, Dest: filepath.Join(pkg, "file.go")},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create temporary go path: %v", err)
 	}
 	defer tmp.Reset()
-	return s.Validate(s.Checker.Check(dir))
+	return s.Validate(s.Checker.Check(pkg))
 }
 
+// Errorer is used to report Errors. testing.T can be used as an Errorer.
 type Errorer interface {
 	Error(args ...interface{})
 }
 
+// Test runs the provided StaticCheckTests for pkg. Errors are reported using
+// Errorer.
 func Test(t Errorer, pkg string, tests []StaticCheckTest) {
 	for i, test := range tests {
 		if err := test.Test(pkg); err != nil {
@@ -43,8 +55,10 @@ func Test(t Errorer, pkg string, tests []StaticCheckTest) {
 	}
 }
 
+// NoError returns err. Use this if you expect the operation to have no error.
 func NoError(err error) error { return err }
 
+// HasSuffix returns a function that checks that an error is returned which has the provided suffix.
 func HasSuffix(suffix string) func(err error) error {
 	return func(err error) error {
 		if err == nil {
@@ -57,6 +71,7 @@ func HasSuffix(suffix string) func(err error) error {
 	}
 }
 
+// MatchesRegexp returns a function that checks that an error is return which matches the provided regexp.
 func MatchesRegexp(re string) func(err error) error {
 	return func(err error) error {
 		if err == nil {
@@ -71,6 +86,7 @@ func MatchesRegexp(re string) func(err error) error {
 	}
 }
 
+// Contains contains
 func Contains(str string) func(err error) error {
 	return func(err error) error {
 		if err == nil {

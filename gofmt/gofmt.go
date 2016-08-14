@@ -3,13 +3,18 @@ package gofmt
 import (
 	"bytes"
 	"fmt"
-	"os/exec"
 	"github.com/surullabs/statictest/checkers"
+	"os/exec"
 )
 
+// Check is implements statictest.Checker for gofmt.
 type Check struct {
 }
 
+// Check runs
+//   gofmt -d <files>
+//
+// for all files in pkgs.
 func (Check) Check(pkgs ...string) error {
 	files, err := checkers.GoFiles(pkgs...)
 	if err != nil {

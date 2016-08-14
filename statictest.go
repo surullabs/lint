@@ -1,8 +1,6 @@
 package statictest
 
 import (
-	"go/build"
-	"os"
 	"reflect"
 	"strings"
 )
@@ -86,8 +84,9 @@ func Skip(checker Checker, skippers ...Skipper) Checker {
 // Checker performs a static check of a list of packages.
 // Use Verify(pkg, checker...) to perform the actual static checks.
 type Checker interface {
-	// Check performs a static check of all files in pkgs, which must all be fully
-	// qualified import paths. Relative import paths will result in an error.
+	// Check performs a static check of all files in pkgs, which may be fully
+	// qualified import paths, relative import paths or paths with the wildcard
+	// suffix ...
 	Check(pkg ...string) error
 }
 
@@ -130,30 +129,4 @@ func Group(checkers ...Checker) Checker {
 		}
 		return errs.AsError()
 	})
-}
-
-// Verify applies checker to pkg. If pkg is a relative import path
-// it will be resolved before being passed to checker.
-func Verify(checker Checker, pkgs ...string) error {
-	pkgs, err := resolvePackages(pkgs)
-	if err != nil {
-		return err
-	}
-	return checker.Check(pkgs...)
-}
-
-func resolvePackages(raw []string) ([]string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	var resolved []string
-	for _, d := range raw {
-		b, err := build.Import(d, wd, build.FindOnly)
-		if err != nil {
-			return nil, err
-		}
-		resolved = append(resolved, b.ImportPath)
-	}
-	return resolved, nil
 }
