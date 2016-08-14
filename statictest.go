@@ -84,7 +84,7 @@ func Skip(checker Checker, skippers ...Skipper) Checker {
 }
 
 // Checker performs a static check of a list of packages.
-// Use Apply(pkg, checker...) to perform the actual static checks.
+// Use Verify(pkg, checker...) to perform the actual static checks.
 type Checker interface {
 	// Check performs a static check of all files in pkgs, which must all be fully
 	// qualified import paths. Relative import paths will result in an error.
@@ -132,9 +132,9 @@ func Group(checkers ...Checker) Checker {
 	})
 }
 
-// Apply applies checker to pkg. If pkg is a relative import path
+// Verify applies checker to pkg. If pkg is a relative import path
 // it will be resolved before being passed to checker.
-func Apply(checker Checker, pkgs ...string) error {
+func Verify(checker Checker, pkgs ...string) error {
 	pkgs, err := resolvePackages(pkgs)
 	if err != nil {
 		return err
