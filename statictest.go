@@ -28,6 +28,12 @@ type Skipper interface {
 	Skip(str string) bool
 }
 
+// SkipFunc is an adapter to allow the use of functions as Skippers. If f is a function, SkipFunc(f) is a Skipper that calls f.
+type SkipFunc func(str string) bool
+
+// Skip calls s(str)
+func (s SkipFunc) Skip(str string) bool { return s(str) }
+
 // StringSkipper implements Skipper and skips an error if Matcher(err, str) == true for
 // any of Strings
 type StringSkipper struct {

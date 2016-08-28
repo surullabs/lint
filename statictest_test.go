@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/surullabs/statictest"
+	"github.com/surullabs/statictest/dupl"
 	"github.com/surullabs/statictest/gofmt"
 	"github.com/surullabs/statictest/golint"
 	"github.com/surullabs/statictest/gosimple"
@@ -18,8 +19,11 @@ func TestStaticChecks(t *testing.T) {
 		golint.Check{},
 		gosimple.Check{},
 		gostaticcheck.Check{},
+		dupl.Check{Threshold: 25},
 	)
-	if err := basic.Check("./..."); err != nil {
+	// Ignore duplicates we're okay with.
+	skipped := statictest.Skip(basic, dupl.SkipTwo, dupl.Skip("golint.go:1,12"))
+	if err := skipped.Check("./..."); err != nil {
 		t.Fatal(err)
 	}
 }

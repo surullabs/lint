@@ -1,6 +1,9 @@
 package gosimple
 
-import "github.com/surullabs/statictest/checkers"
+import (
+	"github.com/surullabs/statictest/checkers"
+	_ "honnef.co/go/simple" // Ensure the gosimple bin is downloaded.
+)
 
 // Check implements a gosimple Checker (https://github.com/dominikh/go-simple)
 type Check struct {

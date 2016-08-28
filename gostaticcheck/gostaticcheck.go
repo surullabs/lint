@@ -1,6 +1,9 @@
 package gostaticcheck
 
-import "github.com/surullabs/statictest/checkers"
+import (
+	"github.com/surullabs/statictest/checkers"
+	_ "honnef.co/go/staticcheck" // Ensure the staticcheck bin is downloaded.
+)
 
 // Check implements a gostaticcheck Checker (https://github.com/dominikh/go-staticcheck)
 type Check struct {
