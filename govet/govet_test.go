@@ -6,22 +6,25 @@ import (
 
 	"strings"
 
-	"github.com/surullabs/statictest"
 	"github.com/surullabs/statictest/testutil"
 )
 
 func testVetError(err error) error {
-	skippable, ok := err.(*statictest.Error)
+	type errors interface {
+		Errors() []string
+	}
+	skippable, ok := err.(errors)
 	if !ok {
 		return fmt.Errorf("unexpected type of error: %v", err)
 	}
-	if len(skippable.Errors) != 2 {
+	errs := skippable.Errors()
+	if len(errs) != 2 {
 		return fmt.Errorf("expected 2 errors, got: %v", err)
 	}
-	if !strings.HasSuffix(skippable.Errors[0], "unreachable code") {
+	if !strings.HasSuffix(errs[0], "unreachable code") {
 		return err
 	}
-	if !strings.Contains(skippable.Errors[1], "result of fmt.Sprintf call not used") {
+	if !strings.Contains(errs[1], "result of fmt.Sprintf call not used") {
 		return err
 	}
 	return nil
