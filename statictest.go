@@ -1,7 +1,36 @@
+// Package statictest runs static analysis tools as go tests.
+//
+// It is intended to be used as a substitute for an external build
+// step that runs tools such as go vet or golint.
+//
+// Example Usage
+//
+//    func TestStaticChecks(t *testing.T) {
+//    	basic := statictest.Group(
+//    		gofmt.Check{},	// Verify that all files are properly formatted
+//    		govet.Shadow,	// go vet
+//    		golint.Check{},	// golint
+//    		gosimple.Check{},	// gosimple
+//    		gostaticcheck.Check{},	// gostaticcheck
+//    	)
+//
+//    	// Ignore some lint errors that we're not interested in.
+//    	skipper := statictest.SkipRegexpMatch(
+//     		"should omit type InterfaceType from declaration of var Handle",
+//    		`settings.go:.*can probably use "var res \[\]byte" instead`)
+//
+//    	basic = statictest.Skip(basic, skipper)
+//
+//     	// Verify all files under this package recursively.
+//    	if err := skipped.Check("./..."); err != nil {
+//    		t.Fatal(err)
+//    	}
+//    }
 package statictest
 
 import (
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -87,13 +116,13 @@ func Skip(checker Checker, skippers ...Skipper) Checker {
 	})
 }
 
-// Checker performs a static check of a list of packages.
-// Use Verify(pkg, checker...) to perform the actual static checks.
+// Checker is the interface that wraps the Check method.
+//
+// Check performs a static check of all files in pkgs, which may be fully
+// qualified import paths, relative import paths or paths with the wildcard
+// suffix ...
 type Checker interface {
-	// Check performs a static check of all files in pkgs, which may be fully
-	// qualified import paths, relative import paths or paths with the wildcard
-	// suffix ...
-	Check(pkg ...string) error
+	Check(pkgs ...string) error
 }
 
 // CheckFunc is a function that implements Checker
@@ -135,4 +164,20 @@ func Group(checkers ...Checker) Checker {
 		}
 		return errs.AsError()
 	})
+}
+
+// SkipRegexpMatch returns a Skipper that skips all errors which match
+// any of the provided regular expression patterns. SkipRegexpMatch expects
+// all patterns to be valid regexps and panics otherwise.
+func SkipRegexpMatch(regexps ...string) Skipper {
+	return StringSkipper{
+		Strings: regexps,
+		Matcher: func(errstr, pattern string) bool {
+			matched, err := regexp.MatchString(pattern, errstr)
+			if err != nil {
+				panic(err)
+			}
+			return matched
+		},
+	}
 }
