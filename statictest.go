@@ -10,8 +10,8 @@
 //    		gofmt.Check{},	// Verify that all files are properly formatted
 //    		govet.Shadow,	// go vet
 //    		golint.Check{},	// golint
-//    		gosimple.Check{},	// gosimple
-//    		gostaticcheck.Check{},	// gostaticcheck
+//    		gosimple.Check{},	// honnef.co/go/simple
+//    		gostaticcheck.Check{},	// honnef.co/go/staticcheck
 //    	)
 //
 //    	// Ignore some lint errors that we're not interested in.
@@ -76,6 +76,11 @@ type errors interface {
 	Errors() []string
 }
 
+type skipper struct {
+	checker  Checker
+	skippers []Skipper
+}
+
 // Skip returns a Checker that executes checker and filters errors using
 // skippers. If checker returns an error that satisfies the below interface
 //
@@ -90,29 +95,31 @@ type errors interface {
 // Skippers are run in the order provided and a single
 // skipper returning true will result in that error being skipped.
 func Skip(checker Checker, skippers ...Skipper) Checker {
-	return CheckFunc(func(pkg ...string) error {
-		switch err := checker.Check(pkg...).(type) {
-		case nil:
-			return nil
-		case errors:
-			var n []string
-			errs := err.Errors()
-			for _, e := range errs {
-				if !skip(e, skippers) {
-					n = append(n, e)
-				}
+	return skipper{checker, skippers}
+}
+
+func (s skipper) Check(pkg ...string) error {
+	switch err := s.checker.Check(pkg...).(type) {
+	case nil:
+		return nil
+	case errors:
+		var n []string
+		errs := err.Errors()
+		for _, e := range errs {
+			if !skip(e, s.skippers) {
+				n = append(n, e)
 			}
-			if len(n) == 0 {
-				return nil
-			}
-			return errorList(n)
-		default:
-			if skip(err.Error(), skippers) {
-				return nil
-			}
-			return err
 		}
-	})
+		if len(n) == 0 {
+			return nil
+		}
+		return errorList(n)
+	default:
+		if skip(err.Error(), s.skippers) {
+			return nil
+		}
+		return err
+	}
 }
 
 // Checker is the interface that wraps the Check method.
@@ -124,11 +131,7 @@ type Checker interface {
 	Check(pkgs ...string) error
 }
 
-// CheckFunc is a function that implements Checker
-type CheckFunc func(pkgs ...string) error
-
-// Check calls c with pkgs
-func (c CheckFunc) Check(pkgs ...string) error { return c(pkgs...) }
+type group []Checker
 
 // Group returns a Checker that applies each of checkers in the order provided.
 //
@@ -146,27 +149,29 @@ func (c CheckFunc) Check(pkgs ...string) error { return c(pkgs...) }
 //
 // Any error that implements errors is flattened into the final error list.
 func Group(checkers ...Checker) Checker {
-	return CheckFunc(func(pkgs ...string) error {
-		var errs []string
-		for _, checker := range checkers {
-			name := reflect.TypeOf(checker).String()
-			switch err := checker.Check(pkgs...).(type) {
-			case nil:
-				continue
-			case errors:
-				cerrs := err.Errors()
-				for _, e := range cerrs {
-					errs = append(errs, name+": "+e)
-				}
-			default:
-				errs = append(errs, name+": "+err.Error())
+	return group(checkers)
+}
+
+func (g group) Check(pkgs ...string) error {
+	var errs []string
+	for _, checker := range g {
+		name := reflect.TypeOf(checker).String()
+		switch err := checker.Check(pkgs...).(type) {
+		case nil:
+			continue
+		case errors:
+			cerrs := err.Errors()
+			for _, e := range cerrs {
+				errs = append(errs, name+": "+e)
 			}
+		default:
+			errs = append(errs, name+": "+err.Error())
 		}
-		if len(errs) == 0 {
-			return nil
-		}
-		return errorList(errs)
-	})
+	}
+	if len(errs) == 0 {
+		return nil
+	}
+	return errorList(errs)
 }
 
 // SkipRegexpMatch returns a Skipper that skips all errors which match
