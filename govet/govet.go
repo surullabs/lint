@@ -4,7 +4,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/surullabs/statictest"
 	"github.com/surullabs/statictest/checkers"
 )
 
@@ -30,7 +29,7 @@ func (c Check) Check(pkgs ...string) error {
 	}
 	switch res.Code {
 	case 1:
-		return &statictest.Error{Errors: strings.Split(strings.TrimSpace(res.Stderr), "\n")}
+		return checkers.Error(strings.Split(strings.TrimSpace(res.Stderr), "\n")...)
 	default:
 		return err
 	}

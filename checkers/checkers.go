@@ -13,9 +13,29 @@ import (
 	"sync"
 
 	"os"
-
-	"github.com/surullabs/statictest"
 )
+
+// Error returns an error containing errs.
+//
+// If errs is empty, nil is returned. If not the returned
+// error will implement the following interface
+//
+//     type errors interface {
+//     	Errors() []string
+//     }
+//
+// and return errs unmodified.
+func Error(errs ...string) error {
+	if len(errs) == 0 {
+		return nil
+	}
+	return errors(errs)
+}
+
+type errors []string
+
+func (e errors) Errors() []string { return []string(e) }
+func (e errors) Error() string    { return strings.Join(e, "\n") }
 
 func packageDir(path string) (string, error) {
 	pkg, err := build.Import(path, ".", build.FindOnly)
@@ -57,10 +77,7 @@ func Lint(bin, importPath string, pkgs []string) error {
 		}
 		errs = append(errs, strings.Split(str, "\n")...)
 	}
-	if len(errs) == 0 {
-		return nil
-	}
-	return &statictest.Error{Errors: errs}
+	return Error(errs...)
 }
 
 // ExecResult holds a status code, stdout and stderr for a single command execution.

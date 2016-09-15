@@ -25,8 +25,12 @@ var (
 	finalRE = regexp.MustCompile(`Found total [0-9]+ clone groups.`)
 )
 
+type skipFunc func(str string) bool
+
+func (s skipFunc) Skip(str string) bool { return s(str) }
+
 // SkipTwo implements Skipper and skips all duplicates having just two instances.
-var SkipTwo = statictest.SkipFunc(func(str string) bool {
+var SkipTwo = skipFunc(func(str string) bool {
 	return strings.HasPrefix(str, "dupl.Check: found 2 clones:") ||
 		strings.HasPrefix(str, "found 2 clones:")
 })
@@ -35,7 +39,7 @@ var SkipTwo = statictest.SkipFunc(func(str string) bool {
 //
 //    c = statictest.Skip(c, Skip("lint.go:1,12"))
 func Skip(suffix string) statictest.Skipper {
-	return statictest.SkipFunc(func(str string) bool {
+	return skipFunc(func(str string) bool {
 		if !strings.Contains(str, "dupl") {
 			return false
 		}
@@ -77,12 +81,12 @@ func (c Check) Check(pkgs ...string) error {
 	}
 	indices = append(indices, []int{len(data), len(data)})
 	p := -1
-	errs := &statictest.Error{}
+	var errs []string
 	for _, l := range indices {
 		if p >= 0 {
-			errs.Errors = append(errs.Errors, string(data[p:l[0]]))
+			errs = append(errs, string(data[p:l[0]]))
 		}
 		p = l[0]
 	}
-	return errs.AsError()
+	return checkers.Error(errs...)
 }
