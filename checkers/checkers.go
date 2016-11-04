@@ -29,13 +29,13 @@ func Error(errs ...string) error {
 	if len(errs) == 0 {
 		return nil
 	}
-	return errors(errs)
+	return errorList(errs)
 }
 
-type errors []string
+type errorList []string
 
-func (e errors) Errors() []string { return []string(e) }
-func (e errors) Error() string    { return strings.Join(e, "\n") }
+func (e errorList) Errors() []string { return []string(e) }
+func (e errorList) Error() string    { return strings.Join(e, "\n") }
 
 func packageDir(path string) (string, error) {
 	pkg, err := build.Import(path, ".", build.FindOnly)
@@ -45,31 +45,58 @@ func packageDir(path string) (string, error) {
 	return pkg.Dir, nil
 }
 
-// InstallMissing runs go get importPath if bin cannot be found in the directories
-// contained in the PATH environment variable.
-func InstallMissing(bin, importPath string) error {
+// FindBin returns bin if it exists in the path. If not it checks
+// go bin directories ($GOROOT/bin and $GOPATH/bin) and returns that if it exists.
+// If neither exist it returns an error.
+func FindBin(bin string) (string, error) {
 	if _, err := exec.LookPath(bin); err == nil {
-		return nil
+		return bin, nil
+	}
+	srcDirs := build.Default.SrcDirs()
+	for _, src := range srcDirs {
+		binFile := filepath.Join(filepath.Dir(src), "bin", bin)
+		if _, err := exec.LookPath(binFile); err == nil {
+			return binFile, nil
+		}
+	}
+	return "", fmt.Errorf("failed to find binary: %v", bin)
+}
+
+// InstallMissing runs go get importPath if bin cannot be found in the directories
+// contained in the PATH environment variable. It returns the path to the installed
+// binary on success.
+func InstallMissing(bin, importPath string) (string, error) {
+	if b, err := FindBin(bin); err == nil {
+		return b, nil
 	}
 	if data, err := exec.Command("go", "get", importPath).CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to install %s: %v: %s", importPath, err, string(data))
+		return "", fmt.Errorf("failed to get %s: %v: %s", importPath, err, string(data))
 	}
-	return nil
+
+	if data, err := exec.Command("go", "install", importPath).CombinedOutput(); err != nil {
+		return "", fmt.Errorf("failed to install %s: %v: %s", importPath, err, string(data))
+	}
+	b, err := FindBin(bin)
+	if err != nil {
+		return "", fmt.Errorf("failed to lookup %v after install: %v", bin, err)
+	}
+	return b, nil
 }
 
 // Lint runs the linter specified by bin for each package in pkgs.
 // The linter is installed if necessary using go get importPath.
 func Lint(bin, importPath string, pkgs []string) error {
-	if err := InstallMissing(bin, importPath); err != nil {
+	b, err := InstallMissing(bin, importPath)
+	if err != nil {
 		return err
 	}
 	var errs []string
 	for _, pkg := range pkgs {
-		p, err := Load(pkg)
-		if err != nil {
-			return fmt.Errorf("failed to load pkg info: %s: %v", pkg, err)
+		p, perr := Load(pkg)
+		if perr != nil {
+			return fmt.Errorf("failed to load pkg info: %s: %v", pkg, perr)
 		}
-		result, _ := Exec(exec.Command(bin, p.Path))
+		result, _ := Exec(exec.Command(b, p.Path))
 		str := strings.TrimSpace(
 			strings.TrimSpace(result.Stdout) + "\n" + strings.TrimSpace(result.Stderr))
 		if str == "" {

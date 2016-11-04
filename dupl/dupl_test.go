@@ -1,15 +1,16 @@
-package dupl
+package dupl_test
 
 import (
 	"testing"
 
+	"github.com/surullabs/lint/dupl"
 	"github.com/surullabs/lint/testutil"
 )
 
 func TestDupl(t *testing.T) {
 	testutil.Test(t, "dupltest", []testutil.StaticCheckTest{
 		{
-			Checker:  Check{},
+			Checker:  dupl.Check{},
 			Validate: testutil.NoError,
 			Content: []byte(`package dupltest
 
@@ -23,7 +24,7 @@ func TestFunc() {
 `),
 		},
 		{
-			Checker:  Check{},
+			Checker:  dupl.Check{},
 			Validate: testutil.MatchesRegexp("found 2 clones:"),
 			Content: []byte(`package dupltest
 
@@ -43,7 +44,7 @@ func TestFunc2() {
 `),
 		},
 		{
-			Checker: Check{},
+			Checker: dupl.Check{},
 			Content: []byte(`package dupltest
 
 		blah`),

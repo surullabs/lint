@@ -1,15 +1,16 @@
-package gofmt
+package gofmt_test
 
 import (
 	"testing"
 
+	"github.com/surullabs/lint/gofmt"
 	"github.com/surullabs/lint/testutil"
 )
 
 func TestGoFmt(t *testing.T) {
 	testutil.Test(t, "gofmttest", []testutil.StaticCheckTest{
 		{
-			Checker: Check{},
+			Checker: gofmt.Check{},
 			Content: []byte(`package gofmttest
 
 import (
@@ -23,7 +24,7 @@ func TestFunc() {
 			Validate: testutil.NoError,
 		},
 		{
-			Checker: Check{},
+			Checker: gofmt.Check{},
 			Content: []byte(`package gofmttest
 
 import (
@@ -42,7 +43,7 @@ type A struct {
 			Validate: testutil.MatchesRegexp("^File not formatted.*gofmttest/file.go"),
 		},
 		{
-			Checker: Check{},
+			Checker: gofmt.Check{},
 			Content: []byte(`package gofmttest
 
 		blah`),

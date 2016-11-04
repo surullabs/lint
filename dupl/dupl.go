@@ -56,7 +56,8 @@ func (c Check) Check(pkgs ...string) error {
 	if err != nil {
 		return err
 	}
-	if err := checkers.InstallMissing("dupl", "github.com/mibk/dupl"); err != nil {
+	bin, err := checkers.InstallMissing("dupl", "github.com/mibk/dupl")
+	if err != nil {
 		return err
 	}
 	t := c.Threshold
@@ -64,7 +65,7 @@ func (c Check) Check(pkgs ...string) error {
 		t = 15
 	}
 	args := append([]string{"-t", strconv.Itoa(t)}, files...)
-	data, err := exec.Command("dupl", args...).CombinedOutput()
+	data, err := exec.Command(bin, args...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("dupl failed: %v: %s", err, string(data))
 	}

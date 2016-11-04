@@ -1,17 +1,19 @@
-package golint
+package golint_test
 
 import (
 	"testing"
 
-	"github.com/surullabs/lint"
-	"github.com/surullabs/lint/testutil"
 	"strings"
+
+	"github.com/surullabs/lint"
+	"github.com/surullabs/lint/golint"
+	"github.com/surullabs/lint/testutil"
 )
 
 func TestGolint(t *testing.T) {
 	testutil.Test(t, "golinttest", []testutil.StaticCheckTest{
 		{
-			Checker: Check{},
+			Checker: golint.Check{},
 			Content: []byte(`package golinttest
 import (
 	"fmt"
@@ -25,7 +27,7 @@ func TestFunc() {
 			Validate: testutil.NoError,
 		},
 		{
-			Checker: Check{},
+			Checker: golint.Check{},
 			Content: []byte(`package golinttest
 
 import (
@@ -40,7 +42,7 @@ func TestFunc() {
 			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
-			Checker: Check{},
+			Checker: golint.Check{},
 			Content: []byte(`package golinttest
 import (
 	"fmt"
@@ -54,7 +56,7 @@ func TestFunc() {
 				"file.go:6:1: exported function TestFunc should have comment or be unexported"),
 		},
 		{
-			Checker: lint.Skip(Check{}, lint.StringSkipper{
+			Checker: lint.Skip(golint.Check{}, lint.StringSkipper{
 				Strings: []string{
 					"exported function TestFunc should have comment or be unexported",
 				},

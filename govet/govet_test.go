@@ -1,4 +1,4 @@
-package govet
+package govet_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"strings"
 
+	"github.com/surullabs/lint/govet"
 	"github.com/surullabs/lint/testutil"
 )
 
@@ -33,7 +34,7 @@ func testVetError(err error) error {
 func TestGoVet(t *testing.T) {
 	testutil.Test(t, "govettest", []testutil.StaticCheckTest{
 		{
-			Checker: Check{},
+			Checker: govet.Check{},
 			Content: []byte(`package govettest
 import (
 	"fmt"
@@ -47,7 +48,7 @@ func TestFunc() {
 			Validate: testutil.NoError,
 		},
 		{
-			Checker: Check{},
+			Checker: govet.Check{},
 			Content: []byte(`package govettest
 
 import (
@@ -62,7 +63,7 @@ func TestFunc() {
 			Validate: testutil.Contains("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
-			Checker: Check{},
+			Checker: govet.Check{},
 			Content: []byte(`package gofmttest
 
 import (
@@ -80,7 +81,7 @@ func TestFunc() {
 			Validate: testVetError,
 		},
 		{
-			Checker: Shadow,
+			Checker: govet.Shadow,
 			Content: []byte(`package gofmttest
 
 import (

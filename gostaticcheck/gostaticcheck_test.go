@@ -1,15 +1,16 @@
-package gostaticcheck
+package gostaticcheck_test
 
 import (
 	"testing"
 
+	"github.com/surullabs/lint/gostaticcheck"
 	"github.com/surullabs/lint/testutil"
 )
 
 func TestGostaticcheck(t *testing.T) {
 	testutil.Test(t, "gostaticchecktest", []testutil.StaticCheckTest{
 		{
-			Checker: Check{},
+			Checker: gostaticcheck.Check{},
 			Content: []byte(`package gostaticchecktest
 import (
 	"fmt"
@@ -23,7 +24,7 @@ func TestFunc() {
 			Validate: testutil.NoError,
 		},
 		{
-			Checker: Check{},
+			Checker: gostaticcheck.Check{},
 			Content: []byte(`package gostaticchecktest
 
 import (
@@ -38,7 +39,7 @@ func TestFunc() {
 			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
-			Checker: Check{},
+			Checker: gostaticcheck.Check{},
 			Content: []byte(`package gostaticchecktest
 import (
 	"fmt"

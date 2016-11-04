@@ -1,15 +1,16 @@
-package gosimple
+package gosimple_test
 
 import (
 	"testing"
 
+	"github.com/surullabs/lint/gosimple"
 	"github.com/surullabs/lint/testutil"
 )
 
 func TestGosimple(t *testing.T) {
 	testutil.Test(t, "gosimpletest", []testutil.StaticCheckTest{
 		{
-			Checker: Check{},
+			Checker: gosimple.Check{},
 			Content: []byte(`package gosimpletest
 import (
 	"fmt"
@@ -23,7 +24,7 @@ func TestFunc() {
 			Validate: testutil.NoError,
 		},
 		{
-			Checker: Check{},
+			Checker: gosimple.Check{},
 			Content: []byte(`package gosimpletest
 
 import (
@@ -38,7 +39,7 @@ func TestFunc() {
 			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
-			Checker: Check{},
+			Checker: gosimple.Check{},
 			Content: []byte(`package gosimpletest
 import (
 	"fmt"
