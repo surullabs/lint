@@ -12,8 +12,8 @@ import (
 	"github.com/surullabs/lint/govet"
 )
 
-func TestStaticChecks(t *testing.T) {
-	basic := lint.Group(
+func TestLint(t *testing.T) {
+	linters := lint.Group(
 		gofmt.Check{},
 		govet.Shadow,
 		golint.Check{},
@@ -22,8 +22,8 @@ func TestStaticChecks(t *testing.T) {
 		dupl.Check{Threshold: 25},
 	)
 	// Ignore duplicates we're okay with.
-	skipped := lint.Skip(basic, dupl.SkipTwo, dupl.Skip("golint.go:1,12"))
-	if err := skipped.Check("./..."); err != nil {
+	linters = lint.Skip(linters, dupl.SkipTwo, dupl.Skip("golint.go:1,12"))
+	if err := linters.Check("./..."); err != nil {
 		t.Fatal(err)
 	}
 }
