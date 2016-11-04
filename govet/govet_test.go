@@ -6,7 +6,7 @@ import (
 
 	"strings"
 
-	"github.com/surullabs/statictest/testutil"
+	"github.com/surullabs/lint/testutil"
 )
 
 func testVetError(err error) error {

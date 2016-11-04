@@ -3,8 +3,8 @@ package golint
 import (
 	"testing"
 
-	"github.com/surullabs/statictest"
-	"github.com/surullabs/statictest/testutil"
+	"github.com/surullabs/lint"
+	"github.com/surullabs/lint/testutil"
 	"strings"
 )
 
@@ -54,7 +54,7 @@ func TestFunc() {
 				"file.go:6:1: exported function TestFunc should have comment or be unexported"),
 		},
 		{
-			Checker: statictest.Skip(Check{}, statictest.StringSkipper{
+			Checker: lint.Skip(Check{}, lint.StringSkipper{
 				Strings: []string{
 					"exported function TestFunc should have comment or be unexported",
 				},

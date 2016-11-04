@@ -3,11 +3,11 @@ package gofmt
 import (
 	"bytes"
 	"fmt"
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint/checkers"
 	"os/exec"
 )
 
-// Check is implements statictest.Checker for gofmt.
+// Check is implements lint.Checker for gofmt.
 type Check struct {
 }
 

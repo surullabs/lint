@@ -1,7 +1,7 @@
 package gostaticcheck
 
 import (
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint/checkers"
 	_ "honnef.co/go/staticcheck" // Ensure the staticcheck bin is downloaded.
 )
 

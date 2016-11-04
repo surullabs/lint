@@ -1,7 +1,7 @@
 package gosimple
 
 import (
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint/checkers"
 	_ "honnef.co/go/simple" // Ensure the gosimple bin is downloaded.
 )
 

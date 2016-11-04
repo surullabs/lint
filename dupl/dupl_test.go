@@ -3,7 +3,7 @@ package dupl
 import (
 	"testing"
 
-	"github.com/surullabs/statictest/testutil"
+	"github.com/surullabs/lint/testutil"
 )
 
 func TestDupl(t *testing.T) {

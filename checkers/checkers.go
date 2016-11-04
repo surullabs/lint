@@ -1,4 +1,4 @@
-// Package checkers provides utilities for implementing statictest checkers.
+// Package checkers provides utilities for implementing lint checkers.
 package checkers
 
 import (

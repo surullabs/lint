@@ -11,11 +11,11 @@ import (
 	"strings"
 
 	"github.com/sridharv/ternary"
-	"github.com/surullabs/statictest"
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint"
+	"github.com/surullabs/lint/checkers"
 )
 
-// Check is implements statictest.Checker for gofmt.
+// Check is implements lint.Checker for gofmt.
 type Check struct {
 	Threshold int
 }
@@ -37,8 +37,8 @@ var SkipTwo = skipFunc(func(str string) bool {
 
 // Skip returns a Skipper which ignores the dup whose first instance ends with suffix.
 //
-//    c = statictest.Skip(c, Skip("lint.go:1,12"))
-func Skip(suffix string) statictest.Skipper {
+//    c = lint.Skip(c, Skip("lint.go:1,12"))
+func Skip(suffix string) lint.Skipper {
 	return skipFunc(func(str string) bool {
 		if !strings.Contains(str, "dupl") {
 			return false

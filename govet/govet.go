@@ -4,10 +4,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint/checkers"
 )
 
-// Check implements a statictest.Checker for the govet command.
+// Check implements a lint.Checker for the govet command.
 type Check struct {
 	Args []string
 }

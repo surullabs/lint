@@ -1,4 +1,4 @@
-// Package statictest runs static analysis tools as go tests.
+// Package lint runs static analysis tools as go tests.
 //
 // It is intended to be used as a substitute for an external build
 // step that runs tools such as go vet or golint.
@@ -6,7 +6,7 @@
 // Example Usage
 //
 //    func TestStaticChecks(t *testing.T) {
-//    	basic := statictest.Group(
+//    	basic := lint.Group(
 //    		gofmt.Check{},	// Verify that all files are properly formatted
 //    		govet.Shadow,	// go vet
 //    		golint.Check{},	// golint
@@ -15,18 +15,18 @@
 //    	)
 //
 //    	// Ignore some lint errors that we're not interested in.
-//    	skipper := statictest.SkipRegexpMatch(
+//    	skipper := lint.SkipRegexpMatch(
 //     		"should omit type InterfaceType from declaration of var Handle",
 //    		`settings.go:.*can probably use "var res \[\]byte" instead`)
 //
-//    	basic = statictest.Skip(basic, skipper)
+//    	basic = lint.Skip(basic, skipper)
 //
 //     	// Verify all files under this package recursively.
 //    	if err := skipped.Check("./..."); err != nil {
 //    		t.Fatal(err)
 //    	}
 //    }
-package statictest
+package lint
 
 import (
 	"reflect"

@@ -3,7 +3,7 @@ package gofmt
 import (
 	"testing"
 
-	"github.com/surullabs/statictest/testutil"
+	"github.com/surullabs/lint/testutil"
 )
 
 func TestGoFmt(t *testing.T) {

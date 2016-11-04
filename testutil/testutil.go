@@ -11,8 +11,8 @@ import (
 	"regexp"
 
 	"github.com/sridharv/fakegopath"
-	"github.com/surullabs/statictest"
-	"github.com/surullabs/statictest/checkers"
+	"github.com/surullabs/lint"
+	"github.com/surullabs/lint/checkers"
 )
 
 // StaticCheckTest is a table-driven test for a checker.
@@ -22,7 +22,7 @@ type StaticCheckTest struct {
 	// Content is the content of the created file.
 	Content []byte
 	// Checker is the checker to run on the package.
-	Checker statictest.Checker
+	Checker lint.Checker
 	// Validate returns nil if err is what is expected.
 	Validate func(err error) error
 }
