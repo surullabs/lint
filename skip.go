@@ -1,6 +1,10 @@
 package lint
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/surullabs/lint/checkers"
+)
 
 // Skipper is the interface that wraps the Skip method.
 //
@@ -55,7 +59,7 @@ func (s skipper) Check(pkg ...string) error {
 		if len(n) == 0 {
 			return nil
 		}
-		return errorList(n)
+		return checkers.Error(n...)
 	default:
 		if skip(err.Error(), s.skippers) {
 			return nil

@@ -7,8 +7,8 @@ package lint
 
 import (
 	"reflect"
-	"strings"
 
+	"github.com/surullabs/lint/checkers"
 	"github.com/surullabs/lint/gofmt"
 	"github.com/surullabs/lint/golint"
 	"github.com/surullabs/lint/gosimple"
@@ -30,11 +30,6 @@ var Default = Group{
 	gosimple.Check{},      // honnef.co/go/simple
 	gostaticcheck.Check{}, // honnef.co/go/staticcheck
 }
-
-type errorList []string
-
-func (e errorList) Errors() []string { return []string(e) }
-func (e errorList) Error() string    { return strings.Join(e, "\n") }
 
 type errors interface {
 	Errors() []string
@@ -87,7 +82,7 @@ func (g Group) Check(pkgs ...string) error {
 	if len(errs) == 0 {
 		return nil
 	}
-	return errorList(errs)
+	return checkers.Error(errs...)
 }
 
 // With returns a copy of g with checkers appended
