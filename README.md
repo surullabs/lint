@@ -48,7 +48,7 @@ func TestLint(t *testing.T) {
   
 ### Why `lint`?
 
-There are a number of excellent linters available for Go and Lint makes it easy to run them from tests. While building our mobile calendar app TimeFerret, (which is built primarily in Go), including scripts that run linters as part of every repository grew tiresome very soon. Using `lint` to create tests that ran on each commit made the codebase much more stable, since any unneeded false positives could be easily skipped. The main advantages of using `lint` over running tools manually is:
+There are a number of excellent linters available for Go and Lint makes it easy to run them from tests. While building our mobile calendar app [TimeFerret](https://www.timeferret.com), (which is built primarily in Go), including scripts that run linters as part of every repository grew tiresome very soon. Using `lint` to create tests that ran on each commit made the codebase much more stable, since any unneeded false positives could be easily skipped. The main advantages of using `lint` over running tools manually is:
 
   - Skip false positives explicitly in your tests - This makes it easy to run only needed checks.
   - Enforce linter usage with no overhead - No special build scripts are needed to install linters on each developer machine as they are automatically downloaded.
