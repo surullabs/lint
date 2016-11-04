@@ -8,6 +8,27 @@ package lint
 import (
 	"reflect"
 	"strings"
+
+	"github.com/surullabs/lint/gofmt"
+	"github.com/surullabs/lint/golint"
+	"github.com/surullabs/lint/gosimple"
+	"github.com/surullabs/lint/gostaticcheck"
+	"github.com/surullabs/lint/govet"
+)
+
+// Default holds a default list of lint tools for convenient use. These include
+//
+//     - gofmt -d
+//     - go tool vet -shadow
+//     - golint
+//     - gosimple (https://github.com/dominikh/go-simple)
+//     - gostaticcheck (https://github.com/dominikh/go-staticcheck)
+var Default = Group(
+	gofmt.Check{},         // Verify that all files are properly formatted
+	govet.Shadow,          // go vet
+	golint.Check{},        // golint
+	gosimple.Check{},      // honnef.co/go/simple
+	gostaticcheck.Check{}, // honnef.co/go/staticcheck
 )
 
 type errorList []string

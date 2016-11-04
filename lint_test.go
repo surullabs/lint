@@ -159,20 +159,16 @@ func TestRegexpMatch(t *testing.T) {
 }
 
 func Example() {
-	linters := lint.Group(
-		gofmt.Check{},         // Verify that all files are properly formatted
-		govet.Shadow,          // go vet
-		golint.Check{},        // golint
-		gosimple.Check{},      // honnef.co/go/simple
-		gostaticcheck.Check{}, // honnef.co/go/staticcheck
-	)
+	// Choose the default list of linters
+	linters := lint.Default
 
-	// Ignore some lint errors that we're not interested in. This ignores all errors from
-	// the file unused.go. This is intended as an example of how to skip errors and not a
+	// Ignore all errors from the file unused.go.
+	//
+	// This is intended as an example of how to skip errors and not a
 	// recommendation that you skip these kinds of errors.
 	linters = lint.Skip(linters, lint.RegexpMatch(
 		`unused\.go:4:2: a blank import`,
-		`unused.go:7:7: don't use underscores in Go names`,
+		`unused\.go:7:7: don't use underscores in Go names`,
 	))
 
 	// Verify all files under this package recursively.
