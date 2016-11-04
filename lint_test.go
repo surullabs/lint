@@ -5,7 +5,14 @@ import (
 
 	"log"
 
+	"fmt"
+	"reflect"
+	"runtime/debug"
+
+	"strings"
+
 	"github.com/surullabs/lint"
+	"github.com/surullabs/lint/checkers"
 	"github.com/surullabs/lint/dupl"
 	"github.com/surullabs/lint/gofmt"
 	"github.com/surullabs/lint/golint"
@@ -33,6 +40,122 @@ func TestLint(t *testing.T) {
 	if err := linters.Check("./..."); err != nil {
 		t.Fatal(err)
 	}
+}
+
+type checkFn func(pkgs ...string) error
+
+func (c checkFn) Check(pkgs ...string) error { return c(pkgs...) }
+
+func assert(t *testing.T, cond bool, msg string) {
+	if cond {
+		return
+	}
+	t.Fatal(msg, string(debug.Stack()))
+}
+
+var (
+	expectRecursive = checkFn(func(args ...string) error {
+		if !reflect.DeepEqual(args, []string{"./..."}) {
+			return fmt.Errorf("expected [./...], got %v", args)
+		}
+		return nil
+	})
+
+	twoErrors = checkFn(func(...string) error {
+		return checkers.Error("err1", "err2")
+	})
+
+	ungroupedError = checkFn(func(...string) error {
+		return fmt.Errorf("ungrouped: %d", 1)
+	})
+)
+
+func TestGroup(t *testing.T) {
+	gcheck := func(fn ...lint.Checker) error {
+		return lint.Group(fn...).Check("./...")
+	}
+
+	// All checks pass
+	err := gcheck(expectRecursive)
+	assert(t, err == nil, fmt.Sprintf("%v", err))
+
+	err = gcheck(twoErrors)
+	assert(t,
+		err != nil && err.Error() == "lint_test.checkFn: err1\nlint_test.checkFn: err2",
+		fmt.Sprintf("%v", err))
+
+	err = gcheck(ungroupedError)
+	assert(t,
+		err != nil && err.Error() == "lint_test.checkFn: ungrouped: 1",
+		fmt.Sprintf("%v", err))
+
+	// Grouped
+	err = gcheck(twoErrors, ungroupedError)
+	assert(t,
+		err != nil && err.Error() == "lint_test.checkFn: err1\nlint_test.checkFn: err2\nlint_test.checkFn: ungrouped: 1",
+		fmt.Sprintf("%v", err))
+}
+
+type skipFunc func(err string) bool
+
+func (s skipFunc) Skip(err string) bool { return s(err) }
+
+func errorIs(str string) skipFunc {
+	return skipFunc(func(err string) bool { return str == err })
+}
+
+func scheck(c lint.Checker, skippers ...lint.Skipper) error {
+	return lint.Skip(c, skippers...).Check("./...")
+}
+
+func TestSkip(t *testing.T) {
+	// All checks pass
+	err := scheck(expectRecursive, errorIs("err1"))
+	assert(t, err == nil, fmt.Sprintf("%v", err))
+
+	err = scheck(twoErrors, errorIs("err1"))
+	assert(t,
+		err != nil && err.Error() == "err2",
+		fmt.Sprintf("%v", err))
+
+	// Skip ungrouped error
+	err = scheck(ungroupedError, errorIs("ungrouped: 1"))
+	assert(t, err == nil, fmt.Sprintf("%v", err))
+
+	// Skip don't skip ungrouped error
+	err = scheck(ungroupedError, errorIs("err1"))
+	assert(t, err != nil && err.Error() == "ungrouped: 1", fmt.Sprintf("%v", err))
+
+	// Grouped
+	err = scheck(lint.Group(twoErrors, ungroupedError), errorIs("lint_test.checkFn: err1"))
+	assert(t,
+		err != nil && err.Error() == "lint_test.checkFn: err2\nlint_test.checkFn: ungrouped: 1",
+		fmt.Sprintf("%v", err))
+
+}
+
+func TestRegexpMatch(t *testing.T) {
+	// regexp match
+	skipRE := lint.RegexpMatch(`err1`, `ungrouped`)
+	err := scheck(lint.Group(twoErrors, ungroupedError), skipRE)
+	assert(t,
+		err != nil && err.Error() == "lint_test.checkFn: err2",
+		fmt.Sprintf("%v", err))
+
+	// panic on bad RE
+
+	func() {
+		defer func() {
+			r := recover()
+			if r != nil {
+				err = fmt.Errorf("%v", r)
+			}
+		}()
+		scheck(twoErrors, lint.RegexpMatch(`(unmatched paren`))
+	}()
+	assert(t,
+		err != nil && strings.HasPrefix(err.Error(), "error parsing regexp"),
+		fmt.Sprintf("%v", err))
 }
 
 func Example() {
