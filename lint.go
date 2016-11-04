@@ -1,4 +1,4 @@
-// Package lint runs static analysis tools as go tests.
+// Package lint runs linters as part of go test.
 //
 // It is intended to be used as a substitute for an external build
 // step that runs tools such as go vet or golint.
@@ -23,13 +23,13 @@ import (
 //     - golint
 //     - gosimple (https://github.com/dominikh/go-simple)
 //     - gostaticcheck (https://github.com/dominikh/go-staticcheck)
-var Default = Group(
+var Default = Group{
 	gofmt.Check{},         // Verify that all files are properly formatted
 	govet.Shadow,          // go vet
 	golint.Check{},        // golint
 	gosimple.Check{},      // honnef.co/go/simple
 	gostaticcheck.Check{}, // honnef.co/go/staticcheck
-)
+}
 
 type errorList []string
 
@@ -42,16 +42,18 @@ type errors interface {
 
 // Checker is the interface that wraps the Check method.
 //
-// Check performs a static check of all files in pkgs, which may be fully
-// qualified import paths, relative import paths or paths with the wildcard
+// Check lints all files in pkgs. Each item in pkgs may be a fully
+// qualified import path, relative import path or a path with the wildcard
 // suffix ...
 type Checker interface {
 	Check(pkgs ...string) error
 }
 
-type group []Checker
+// Group is a Checker list that is applied in sequence. See Check for details on
+// how it is applied.
+type Group []Checker
 
-// Group returns a Checker that applies each of checkers in the order provided.
+// Check applies each of checkers in g in the order provided.
 //
 // The error returned is either nil or contains errors returned by each Checker.
 // These are exposed using the errors interface described in Skip and prefixed with the type of the
@@ -66,11 +68,7 @@ type group []Checker
 // A checker is not shorted-circuited by a previous checker returning an error.
 //
 // Any error that implements errors is flattened into the final error list.
-func Group(checkers ...Checker) Checker {
-	return group(checkers)
-}
-
-func (g group) Check(pkgs ...string) error {
+func (g Group) Check(pkgs ...string) error {
 	var errs []string
 	for _, checker := range g {
 		name := reflect.TypeOf(checker).String()
@@ -90,4 +88,11 @@ func (g group) Check(pkgs ...string) error {
 		return nil
 	}
 	return errorList(errs)
+}
+
+// With returns a copy of g with checkers appended
+func (g Group) With(checkers ...Checker) Group {
+	copied := make([]Checker, len(g))
+	copy(copied, g)
+	return Group(append(copied, checkers...))
 }

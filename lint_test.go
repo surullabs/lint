@@ -14,24 +14,11 @@ import (
 	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/checkers"
 	"github.com/surullabs/lint/dupl"
-	"github.com/surullabs/lint/gofmt"
-	"github.com/surullabs/lint/golint"
-	"github.com/surullabs/lint/gosimple"
-	"github.com/surullabs/lint/gostaticcheck"
-	"github.com/surullabs/lint/govet"
 )
 
 func TestLint(t *testing.T) {
-	linters := lint.Group(
-		gofmt.Check{},
-		govet.Shadow,
-		golint.Check{},
-		gosimple.Check{},
-		gostaticcheck.Check{},
-		dupl.Check{Threshold: 25},
-	)
-
-	linters = lint.Skip(linters,
+	linters := lint.Skip(
+		lint.Default.With(dupl.Check{Threshold: 25}),
 		// Ignore all errors from unused.go
 		lint.RegexpMatch(`unused\.go`),
 		// Ignore duplicates we're okay with.
@@ -72,7 +59,7 @@ var (
 
 func TestGroup(t *testing.T) {
 	gcheck := func(fn ...lint.Checker) error {
-		return lint.Group(fn...).Check("./...")
+		return lint.Group(fn).Check("./...")
 	}
 
 	// All checks pass
@@ -127,7 +114,7 @@ func TestSkip(t *testing.T) {
 	assert(t, err != nil && err.Error() == "ungrouped: 1", fmt.Sprintf("%v", err))
 
 	// Grouped
-	err = scheck(lint.Group(twoErrors, ungroupedError), errorIs("lint_test.checkFn: err1"))
+	err = scheck(lint.Group{twoErrors, ungroupedError}, errorIs("lint_test.checkFn: err1"))
 	assert(t,
 		err != nil && err.Error() == "lint_test.checkFn: err2\nlint_test.checkFn: ungrouped: 1",
 		fmt.Sprintf("%v", err))
@@ -137,7 +124,7 @@ func TestSkip(t *testing.T) {
 func TestRegexpMatch(t *testing.T) {
 	// regexp match
 	skipRE := lint.RegexpMatch(`err1`, `ungrouped`)
-	err := scheck(lint.Group(twoErrors, ungroupedError), skipRE)
+	err := scheck(lint.Group{twoErrors, ungroupedError}, skipRE)
 	assert(t,
 		err != nil && err.Error() == "lint_test.checkFn: err2",
 		fmt.Sprintf("%v", err))
@@ -166,13 +153,13 @@ func Example() {
 	//
 	// This is intended as an example of how to skip errors and not a
 	// recommendation that you skip these kinds of errors.
-	linters = lint.Skip(linters, lint.RegexpMatch(
+	filteredLinters := lint.Skip(linters, lint.RegexpMatch(
 		`unused\.go:4:2: a blank import`,
 		`unused\.go:7:7: don't use underscores in Go names`,
 	))
 
 	// Verify all files under this package recursively.
-	if err := linters.Check("./..."); err != nil {
+	if err := filteredLinters.Check("./..."); err != nil {
 		// Record lint failures.
 		// Use t.Fatal(err) when running in a test
 		log.Fatal(err)
