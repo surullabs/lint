@@ -81,10 +81,10 @@ func Skip(checker Checker, skippers ...Skipper) Checker {
 	return skipper{checker, skippers}
 }
 
-// SkipRegexpMatch returns a Skipper that skips all errors which match
+// RegexpMatch returns a Skipper that skips all errors which match
 // any of the provided regular expression patterns. SkipRegexpMatch expects
 // all patterns to be valid regexps and panics otherwise.
-func SkipRegexpMatch(regexps ...string) Skipper {
+func RegexpMatch(regexps ...string) Skipper {
 	return StringSkipper{
 		Strings: regexps,
 		Matcher: func(errstr, pattern string) bool {

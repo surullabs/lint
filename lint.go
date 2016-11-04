@@ -3,29 +3,6 @@
 // It is intended to be used as a substitute for an external build
 // step that runs tools such as go vet or golint.
 //
-// Example Usage
-//
-//    func TestStaticChecks(t *testing.T) {
-//    	basic := lint.Group(
-//    		gofmt.Check{},	// Verify that all files are properly formatted
-//    		govet.Shadow,	// go vet
-//    		golint.Check{},	// golint
-//    		gosimple.Check{},	// honnef.co/go/simple
-//    		gostaticcheck.Check{},	// honnef.co/go/staticcheck
-//    	)
-//
-//    	// Ignore some lint errors that we're not interested in.
-//    	skipper := lint.SkipRegexpMatch(
-//     		"should omit type InterfaceType from declaration of var Handle",
-//    		`settings.go:.*can probably use "var res \[\]byte" instead`)
-//
-//    	basic = lint.Skip(basic, skipper)
-//
-//     	// Verify all files under this package recursively.
-//    	if err := skipped.Check("./..."); err != nil {
-//    		t.Fatal(err)
-//    	}
-//    }
 package lint
 
 import (
