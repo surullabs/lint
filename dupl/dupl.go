@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sridharv/ternary"
 	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/checkers"
 )
@@ -60,7 +59,10 @@ func (c Check) Check(pkgs ...string) error {
 	if err := checkers.InstallMissing("dupl", "github.com/mibk/dupl"); err != nil {
 		return err
 	}
-	t := ternary.Int(c.Threshold == 0, 15, c.Threshold)
+	t := c.Threshold
+	if t == 0 {
+		t = 15
+	}
 	args := append([]string{"-t", strconv.Itoa(t)}, files...)
 	data, err := exec.Command("dupl", args...).CombinedOutput()
 	if err != nil {
