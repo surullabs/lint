@@ -55,6 +55,19 @@ func Test(t Errorer, pkg string, tests []StaticCheckTest) {
 	}
 }
 
+// SkippedErrors returns a function that skips all errors matching pattern and verifies
+// there are no errors left.
+func SkippedErrors(pattern string) func(error) error {
+	return Skip(lint.RegexpMatch(pattern), NoError)
+}
+
+// Skip returns a function that skips errors using s and verifies the result using then
+func Skip(s lint.Skipper, then func(error) error) func(err error) error {
+	return func(err error) error {
+		return then(lint.Skip(err, s))
+	}
+}
+
 // NoError returns err. Use this if you expect the operation to have no error.
 func NoError(err error) error { return err }
 

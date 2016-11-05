@@ -39,37 +39,7 @@ func skip(check string, skippers []Skipper) bool {
 	return false
 }
 
-type skipper struct {
-	checker  Checker
-	skippers []Skipper
-}
-
-func (s skipper) Check(pkg ...string) error {
-	switch err := s.checker.Check(pkg...).(type) {
-	case nil:
-		return nil
-	case errors:
-		var n []string
-		errs := err.Errors()
-		for _, e := range errs {
-			if !skip(e, s.skippers) {
-				n = append(n, e)
-			}
-		}
-		if len(n) == 0 {
-			return nil
-		}
-		return checkers.Error(n...)
-	default:
-		if skip(err.Error(), s.skippers) {
-			return nil
-		}
-		return err
-	}
-}
-
-// Skip returns a Checker that executes checker and filters errors using
-// skippers. If checker returns an error that satisfies the below interface
+// Skip filters errors using skippers.  If err satisfies the below interface
 //
 //     type errors interface {
 //     	Errors() []string
@@ -81,8 +51,28 @@ func (s skipper) Check(pkg ...string) error {
 //
 // Skippers are run in the order provided and a single
 // skipper returning true will result in that error being skipped.
-func Skip(checker Checker, skippers ...Skipper) Checker {
-	return skipper{checker, skippers}
+func Skip(err error, skippers ...Skipper) error {
+	switch serr := err.(type) {
+	case nil:
+		return nil
+	case errors:
+		var n []string
+		errs := serr.Errors()
+		for _, e := range errs {
+			if !skip(e, skippers) {
+				n = append(n, e)
+			}
+		}
+		if len(n) == 0 {
+			return nil
+		}
+		return checkers.Error(n...)
+	default:
+		if skip(serr.Error(), skippers) {
+			return nil
+		}
+		return serr
+	}
 }
 
 // RegexpMatch returns a Skipper that skips all errors which match

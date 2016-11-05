@@ -17,14 +17,14 @@ import (
 )
 
 func TestLint(t *testing.T) {
-	linters := lint.Skip(
-		lint.Default.With(dupl.Check{Threshold: 25}),
+	err := lint.Default.With(dupl.Check{Threshold: 25}).Check("./...")
+	err = lint.Skip(err,
 		// Ignore all errors from unused.go
 		lint.RegexpMatch(`unused\.go`),
 		// Ignore duplicates we're okay with.
-		dupl.SkipTwo, dupl.Skip("golint.go:1,12"),
-	)
-	if err := linters.Check("./..."); err != nil {
+		dupl.SkipTwo, dupl.Skip("golint.go:1,12"))
+
+	if err != nil {
 		t.Fatal(err)
 	}
 }
@@ -92,7 +92,7 @@ func errorIs(str string) skipFunc {
 }
 
 func scheck(c lint.Checker, skippers ...lint.Skipper) error {
-	return lint.Skip(c, skippers...).Check("./...")
+	return lint.Skip(c.Check("./..."), skippers...)
 }
 
 func TestSkip(t *testing.T) {
@@ -146,23 +146,23 @@ func TestRegexpMatch(t *testing.T) {
 }
 
 func Example() {
-	// Choose the default list of linters
-	linters := lint.Default
+	// Run the default set of linters
+	err := lint.Default.Check("./...")
 
 	// Ignore all errors from the file unused.go.
 	//
 	// This is intended as an example of how to skip errors and not a
 	// recommendation that you skip these kinds of errors.
-	filteredLinters := lint.Skip(linters, lint.RegexpMatch(
+	err = lint.Skip(err, lint.RegexpMatch(
 		`unused\.go:4:2: a blank import`,
 		`unused\.go:7:7: don't use underscores in Go names`,
 	))
 
-	// Verify all files under this package recursively.
-	if err := filteredLinters.Check("./..."); err != nil {
+	if err != nil {
 		// Record lint failures.
 		// Use t.Fatal(err) when running in a test
 		log.Fatal(err)
 	}
 	// Output:
 }
+

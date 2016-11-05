@@ -1,12 +1,10 @@
 package varcheck_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/surullabs/lint"
-	"github.com/surullabs/lint/varcheck"
 	"github.com/surullabs/lint/testutil"
+	"github.com/surullabs/lint/varcheck"
 )
 
 func TestGoVarcheck(t *testing.T) {
@@ -38,17 +36,12 @@ var unused bool
 			Validate: testutil.HasSuffix("unused"),
 		},
 		{
-			Checker: lint.Skip(varcheck.Check{}, lint.StringSkipper{
-				Strings: []string{
-					"unused",
-				},
-				Matcher: strings.HasSuffix,
-			}),
+			Checker: varcheck.Check{},
 			Content: []byte(`package varchecktest
 
 var unused bool
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.SkippedErrors("unused"),
 		},
 	},
 	)

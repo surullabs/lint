@@ -1,10 +1,8 @@
 package errcheck_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/errcheck"
 	"github.com/surullabs/lint/testutil"
 )
@@ -45,12 +43,7 @@ func TestFunc() {
 			Validate: testutil.HasSuffix("f.Close()"),
 		},
 		{
-			Checker: lint.Skip(errcheck.Check{}, lint.StringSkipper{
-				Strings: []string{
-					"f.Close()",
-				},
-				Matcher: strings.HasSuffix,
-			}),
+			Checker: errcheck.Check{},
 			Content: []byte(`package errchecktest
 import (
 	"os"
@@ -61,7 +54,7 @@ func TestFunc() {
 	f.Close()
 }
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.SkippedErrors(`f\.Close`),
 		},
 	},
 	)

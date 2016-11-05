@@ -3,9 +3,6 @@ package golint_test
 import (
 	"testing"
 
-	"strings"
-
-	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/golint"
 	"github.com/surullabs/lint/testutil"
 )
@@ -56,12 +53,7 @@ func TestFunc() {
 				"file.go:6:1: exported function TestFunc should have comment or be unexported"),
 		},
 		{
-			Checker: lint.Skip(golint.Check{}, lint.StringSkipper{
-				Strings: []string{
-					"exported function TestFunc should have comment or be unexported",
-				},
-				Matcher: strings.HasSuffix,
-			}),
+			Checker: golint.Check{},
 			Content: []byte(`package golinttest
 import (
 	"fmt"
@@ -70,7 +62,8 @@ import (
 func TestFunc() {
 }
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.SkippedErrors(
+				`exported function TestFunc should have comment or be unexported`),
 		},
 	},
 	)

@@ -1,10 +1,8 @@
 package aligncheck_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/aligncheck"
 	"github.com/surullabs/lint/testutil"
 )
@@ -43,12 +41,7 @@ type s struct {
 			Validate: testutil.HasSuffix("struct s could have size 24 (currently 32)"),
 		},
 		{
-			Checker: lint.Skip(aligncheck.Check{}, lint.StringSkipper{
-				Strings: []string{
-					"struct s could have size 24 (currently 32)",
-				},
-				Matcher: strings.HasSuffix,
-			}),
+			Checker: aligncheck.Check{},
 			Content: []byte(`package alignchecktest
 
 type s struct {
@@ -57,7 +50,7 @@ type s struct {
 	c int32
 }
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.SkippedErrors(`struct s could have size 24 \(currently 32\)`),
 		},
 	},
 	)

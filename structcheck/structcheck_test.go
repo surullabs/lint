@@ -1,10 +1,8 @@
 package structcheck_test
 
 import (
-	"strings"
 	"testing"
 
-	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/structcheck"
 	"github.com/surullabs/lint/testutil"
 )
@@ -40,18 +38,13 @@ type s struct {
 			Validate: testutil.HasSuffix("structchecktest.s.b"),
 		},
 		{
-			Checker: lint.Skip(structcheck.Check{}, lint.StringSkipper{
-				Strings: []string{
-					"structchecktest.s.b",
-				},
-				Matcher: strings.HasSuffix,
-			}),
+			Checker: structcheck.Check{},
 			Content: []byte(`package structchecktest
 type s struct {
 	b bool
 }
 `),
-			Validate: testutil.NoError,
+			Validate: testutil.SkippedErrors(`structchecktest\.s\.b`),
 		},
 	},
 	)

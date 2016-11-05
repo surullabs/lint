@@ -1,6 +1,6 @@
 ## Lint - run linters from Go
 
-Lint makes it easy to run linters from Go code. This allows lint checks to be part of a regular `go build` + `go test` workflow. False positives are easily ignored and linters are automatically integrated into CI pipelines without any extra effort. For detailed documentation check the [project website](https://www.timeferret.com/lint).
+Lint makes it easy to run linters from Go code. This allows lint checks to be part of a regular `go build` + `go test` workflow. False positives are easily ignored and linters are automatically integrated into CI pipelines without any extra effort. Check the [project website](https://www.timeferret.com/lint) to learn more about how it can be useful.
 
 ### Quick Start
 
@@ -10,25 +10,14 @@ go get -t github.com/surullabs/lint
 ```
 Run the default linters by adding a new test at the top level of your repository
 ```
-import (
-    "testing"
-    "github.com/surullabs/lint"
-)
-
 func TestLint(t *testing.T) {
-    if err := lint.Default.Check("./..."); err != nil {
-        t.Fatal("lint failures: %v", err)
-    }
-}
-```
-
-Ignore some errors you aren't interested in
-```
-func TestLint(t *testing.T) {
-    // Run default linters and ignore lint errors from auto-generated files
-    filtered := lint.Skip(lint.Default, lint.RegexpMatch(`_string\.go`, `\.pb\.go`))
+    // Run default linters
+    err := lint.Default.Check("./...")
     
-    if err := filtered.Check("./..."); err != nil {
+    // Ignore lint errors from auto-generated files
+    err = lint.Skip(err, lint.RegexpMatch(`_string\.go`, `\.pb\.go`))
+    
+    if err != nil {
         t.Fatal("lint failures: %v", err)
     }
 }
