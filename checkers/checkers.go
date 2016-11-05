@@ -83,6 +83,20 @@ func InstallMissing(bin, importPath string) (string, error) {
 	return b, nil
 }
 
+// ExecErrors holds errors collected from executing a linter
+type ExecErrors []string
+
+// Add appends any output from stdout or stderr as an error. The exit code is ignored.
+// Empty lines are also ignored
+func (e *ExecErrors) Add(r ExecResult) {
+	str := strings.TrimSpace(
+		strings.TrimSpace(r.Stdout) + "\n" + strings.TrimSpace(r.Stderr))
+	if str == "" {
+		return
+	}
+	*e = append(*e, strings.Split(str, "\n")...)
+}
+
 // Lint runs the linter specified by bin for each package in pkgs.
 // The linter is installed if necessary using go get importPath.
 func Lint(bin, importPath string, pkgs []string, args ...string) error {
@@ -90,21 +104,16 @@ func Lint(bin, importPath string, pkgs []string, args ...string) error {
 	if err != nil {
 		return err
 	}
-	var errs []string
+	errs := &ExecErrors{}
 	for _, pkg := range pkgs {
 		p, perr := Load(pkg)
 		if perr != nil {
 			return fmt.Errorf("failed to load pkg info: %s: %v", pkg, perr)
 		}
 		result, _ := Exec(exec.Command(b, append(args, p.Path)...))
-		str := strings.TrimSpace(
-			strings.TrimSpace(result.Stdout) + "\n" + strings.TrimSpace(result.Stderr))
-		if str == "" {
-			continue
-		}
-		errs = append(errs, strings.Split(str, "\n")...)
+		errs.Add(result)
 	}
-	return Error(errs...)
+	return Error((*errs)...)
 }
 
 // ExecResult holds a status code, stdout and stderr for a single command execution.
@@ -181,6 +190,8 @@ type Package struct {
 	GoFiles []string
 	// All sub packages if Path is a wildcard, or just Path if not.
 	Pkgs []string
+	// build.Package instance for this package
+	Build *build.Package
 }
 
 var (
@@ -258,7 +269,7 @@ func (p *Package) readPackages() error {
 		if err != nil {
 			return fmt.Errorf("import failed: %s: %v", p.Path, err)
 		}
-		p.Pkgs = []string{b.ImportPath}
+		p.Pkgs, p.Build = []string{b.ImportPath}, b
 		return nil
 	}
 
@@ -267,6 +278,7 @@ func (p *Package) readPackages() error {
 	if err != nil {
 		return fmt.Errorf("import failed %s: %v", d, err)
 	}
+	p.Build = b
 	dir := b.Dir
 	var paths []string
 	err = filepath.Walk(dir, func(path string, stat os.FileInfo, walkErr error) error {
