@@ -85,7 +85,7 @@ func InstallMissing(bin, importPath string) (string, error) {
 
 // Lint runs the linter specified by bin for each package in pkgs.
 // The linter is installed if necessary using go get importPath.
-func Lint(bin, importPath string, pkgs []string) error {
+func Lint(bin, importPath string, pkgs []string, args ...string) error {
 	b, err := InstallMissing(bin, importPath)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func Lint(bin, importPath string, pkgs []string) error {
 		if perr != nil {
 			return fmt.Errorf("failed to load pkg info: %s: %v", pkg, perr)
 		}
-		result, _ := Exec(exec.Command(b, p.Path))
+		result, _ := Exec(exec.Command(b, append(args, p.Path)...))
 		str := strings.TrimSpace(
 			strings.TrimSpace(result.Stdout) + "\n" + strings.TrimSpace(result.Stderr))
 		if str == "" {
