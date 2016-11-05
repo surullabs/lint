@@ -14,6 +14,8 @@ import (
 	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/checkers"
 	"github.com/surullabs/lint/dupl"
+	"github.com/surullabs/lint/gofmt"
+	"github.com/surullabs/lint/govet"
 )
 
 func TestLint(t *testing.T) {
@@ -166,3 +168,27 @@ func Example() {
 	// Output:
 }
 
+func Example_custom() {
+	// Run a custom set of linters
+	custom := lint.Group{
+		gofmt.Check{}, govet.Check{},
+	}
+	if err := custom.Check("./..."); err != nil {
+		// Record lint failures.
+		// Use t.Fatal(err) when running in a test
+		log.Fatal(err)
+	}
+	// Output:
+}
+
+func Example_packages() {
+	custom := lint.Group{gofmt.Check{}, govet.Check{}}
+
+	// Specify a list of packages instead of the wildcard
+	if err := custom.Check(".", "./checkers"); err != nil {
+		// Record lint failures.
+		// Use t.Fatal(err) when running in a test
+		log.Fatal(err)
+	}
+	// Output:
+}
