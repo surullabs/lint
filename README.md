@@ -47,6 +47,13 @@ func TestLint(t *testing.T) {
   - `gostaticcheck` - [https://github.com/dominikh/go-staticcheck](https://github.com/dominikh/go-staticcheck)
   - `errcheck` - [https://github.com/kisielk/errcheck](https://github.com/kisielk/errcheck)
   
+ ## Other available linters
+ 
+  - `varcheck` - [Detect unused variables and constants](https://github.com/opennota/check)
+  - `structcheck` - [Detect unused struct fields](https://github.com/opennota/check)
+  - `aligncheck` - [Detect suboptimal struct alignment](https://github.com/opennota/check)
+  - `dupl` - [Detect duplicated code](https://github.com/mibk/dupl)
+ 
 ### Why `lint`?
 
 There are a number of excellent linters available for Go and Lint makes it easy to run them from tests. While building our mobile calendar app [TimeFerret](https://www.timeferret.com), (which is built primarily in Go), including scripts that run linters as part of every repository grew tiresome very soon. Using `lint` to create tests that ran on each commit made the codebase much more stable, since any unneeded false positives were easily skipped. The main advantages of using `lint` over running tools manually is:
