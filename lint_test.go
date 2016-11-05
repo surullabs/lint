@@ -138,7 +138,7 @@ func TestRegexpMatch(t *testing.T) {
 				err = fmt.Errorf("%v", r)
 			}
 		}()
-		scheck(twoErrors, lint.RegexpMatch(`(unmatched paren`))
+		_ = scheck(twoErrors, lint.RegexpMatch(`(unmatched paren`))
 	}()
 	assert(t,
 		err != nil && strings.HasPrefix(err.Error(), "error parsing regexp"),
