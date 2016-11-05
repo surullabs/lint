@@ -45,6 +45,7 @@ func TestLint(t *testing.T) {
   - `golint` - [https://github.com/golang/lint](https://github.com/golang/lint)
   - `gosimple` - [https://github.com/dominikh/go-simple](https://github.com/dominikh/go-simple)
   - `gostaticcheck` - [https://github.com/dominikh/go-staticcheck](https://github.com/dominikh/go-staticcheck)
+  - `errcheck` - [https://github.com/kisielk/errcheck](https://github.com/kisielk/errcheck)
   
 ### Why `lint`?
 

@@ -9,6 +9,7 @@ import (
 	"reflect"
 
 	"github.com/surullabs/lint/checkers"
+	"github.com/surullabs/lint/errcheck"
 	"github.com/surullabs/lint/gofmt"
 	"github.com/surullabs/lint/golint"
 	"github.com/surullabs/lint/gosimple"
@@ -23,12 +24,14 @@ import (
 //     - golint
 //     - gosimple (https://github.com/dominikh/go-simple)
 //     - gostaticcheck (https://github.com/dominikh/go-staticcheck)
+//     - errcheck (https://github.com/kisielk/errcheck)
 var Default = Group{
 	gofmt.Check{},         // Verify that all files are properly formatted
 	govet.Shadow,          // go vet
 	golint.Check{},        // golint
 	gosimple.Check{},      // honnef.co/go/simple
 	gostaticcheck.Check{}, // honnef.co/go/staticcheck
+	errcheck.Check{},
 }
 
 type errors interface {
