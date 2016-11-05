@@ -40,12 +40,12 @@ func TestLint(t *testing.T) {
 
 ### Default linters
 
-  - `gofmt` - Run `gofmt -d` and report any differences as errors.
-  - `govet` - Run `go tool vet -shadow`
+  - `gofmt` - [Run `gofmt -d` and report any differences as errors](https://golang.org/cmd/gofmt/)
+  - `govet` - [Run `go tool vet -shadow`](https://golang.org/cmd/vet/)
   - `golint` - [https://github.com/golang/lint](https://github.com/golang/lint)
-  - `gosimple` - [https://github.com/dominikh/go-simple](https://github.com/dominikh/go-simple)
-  - `gostaticcheck` - [https://github.com/dominikh/go-staticcheck](https://github.com/dominikh/go-staticcheck)
-  - `errcheck` - [https://github.com/kisielk/errcheck](https://github.com/kisielk/errcheck)
+  - `gosimple` - [Code simplification](https://github.com/dominikh/go-simple)
+  - `gostaticcheck` - [Verify function arguments](https://github.com/dominikh/go-staticcheck)
+  - `errcheck` - [Find ignored errors](https://github.com/kisielk/errcheck)
   
  ## Other available linters
  
