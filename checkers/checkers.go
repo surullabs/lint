@@ -69,7 +69,7 @@ func InstallMissing(bin, getPath, importPath string) (string, error) {
 	if b, err := FindBin(bin); err == nil {
 		return b, nil
 	}
-	if data, err := exec.Command("go", "get", "-d", getPath).CombinedOutput(); err != nil {
+	if data, err := exec.Command("go", "get", getPath).CombinedOutput(); err != nil {
 		return "", fmt.Errorf("failed to get %s: %v: %s", importPath, err, string(data))
 	}
 
