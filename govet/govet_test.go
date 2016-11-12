@@ -6,8 +6,8 @@ import (
 
 	"strings"
 
-	"github.com/surullabs/lint/govet"
 	"github.com/surullabs/lint/testutil"
+	"github.com/surullabs/lint/govet"
 )
 
 func testVetError(err error) error {
@@ -96,7 +96,7 @@ func TestFunc() (err error) {
     return err
 }
 `),
-			Validate: testutil.Contains(`declaration of "err" shadows declaration at`),
+			Validate: testutil.MatchesRegexp(`declaration of "?err"? shadows declaration at`),
 		},
 	})
 
