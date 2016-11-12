@@ -11,5 +11,5 @@ type Check struct {
 
 // Check runs gostaticcheck for pkgs
 func (Check) Check(pkgs ...string) error {
-	return checkers.Lint("staticcheck", "honnef.co/go/staticcheck/cmd/staticcheck", pkgs)
+	return checkers.Lint("staticcheck", "", "honnef.co/go/staticcheck/cmd/staticcheck", pkgs)
 }

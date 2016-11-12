@@ -15,10 +15,9 @@ type Check struct {
 
 // Check runs structcheck and returns any errors found.
 func (c Check) Check(pkgs ...string) error {
-	if _, err := checkers.InstallMissing("structcheck", "github.com/opennota/check", "github.com/opennota/check/cmd/structcheck"); err != nil {
-		return err
-	}
-	return checkers.Lint("structcheck", "github.com/opennota/check/cmd/structcheck", pkgs, c.Args()...)
+	return checkers.Lint("structcheck",
+		"github.com/opennota/check",
+		"github.com/opennota/check/cmd/structcheck", pkgs, c.Args()...)
 }
 
 // Args returns command line flags for structcheck

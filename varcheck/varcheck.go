@@ -14,7 +14,9 @@ func (c Check) Check(pkgs ...string) error {
 	if _, err := checkers.InstallMissing("varcheck", "github.com/opennota/check", "github.com/opennota/check/cmd/varcheck"); err != nil {
 		return err
 	}
-	return checkers.Lint("varcheck", "github.com/opennota/check/cmd/varcheck", pkgs, c.Args()...)
+	return checkers.Lint("varcheck",
+		"github.com/opennota/check",
+		"github.com/opennota/check/cmd/varcheck", pkgs, c.Args()...)
 }
 
 // Args returns all args passed to varcheck

@@ -15,7 +15,7 @@ type Check struct {
 
 // Check runs errcheck and returns any errors found.
 func (c Check) Check(pkgs ...string) error {
-	return checkers.Lint("errcheck", "github.com/kisielk/errcheck", pkgs, c.Args()...)
+	return checkers.Lint("errcheck", "", "github.com/kisielk/errcheck", pkgs, c.Args()...)
 }
 
 // Args returns command line arguments used for errcheck

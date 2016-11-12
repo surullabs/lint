@@ -98,9 +98,16 @@ func (e *ExecErrors) Add(r ExecResult) {
 }
 
 // Lint runs the linter specified by bin for each package in pkgs.
-// The linter is installed if necessary using go get importPath.
-func Lint(bin, importPath string, pkgs []string, args ...string) error {
-	b, err := InstallMissing(bin, importPath, importPath)
+// The linter is installed if necessary using
+//   go get getPath
+//   go install installPath
+//
+// If getPath is empty, installPath is used for go get.
+func Lint(bin, getPath, installPath string, pkgs []string, args ...string) error {
+	if getPath == "" {
+		getPath = installPath
+	}
+	b, err := InstallMissing(bin, getPath, installPath)
 	if err != nil {
 		return err
 	}
