@@ -8,6 +8,7 @@ env:
 
 install:
 - go get golang.org/x/tools/cover github.com/mattn/goveralls github.com/modocache/gover
+- go get -t ./...
 
 script:
 - ./testcovered.sh
