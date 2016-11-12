@@ -9,5 +9,8 @@ type Check struct {
 
 // Check runs aligncheck and returns any errors found.
 func (c Check) Check(pkgs ...string) error {
+	if _, err := checkers.InstallMissing("aligncheck", "github.com/opennota/check", "github.com/opennota/check/cmd/aligncheck"); err != nil {
+		return err
+	}
 	return checkers.Lint("aligncheck", "github.com/opennota/check/cmd/aligncheck", pkgs)
 }

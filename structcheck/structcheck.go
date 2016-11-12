@@ -25,5 +25,8 @@ func (c Check) Check(pkgs ...string) error {
 	if c.IncludeTests {
 		args = append(args, "-t")
 	}
+	if _, err := checkers.InstallMissing("structcheck", "github.com/opennota/check", "github.com/opennota/check/cmd/structcheck"); err != nil {
+		return err
+	}
 	return checkers.Lint("structcheck", "github.com/opennota/check/cmd/structcheck", pkgs, args...)
 }

@@ -62,10 +62,10 @@ func FindBin(bin string) (string, error) {
 	return "", fmt.Errorf("failed to find binary: %v", bin)
 }
 
-// InstallMissing runs go get importPath if bin cannot be found in the directories
-// contained in the PATH environment variable. It returns the path to the installed
-// binary on success.
-func InstallMissing(bin, importPath string) (string, error) {
+// InstallMissing runs go get getPath and then go get importPath
+// if bin cannot be found in the directories contained in the PATH environment variable.
+// It returns the path to the installed binary on success.
+func InstallMissing(bin, getPath, importPath string) (string, error) {
 	if b, err := FindBin(bin); err == nil {
 		return b, nil
 	}
@@ -100,7 +100,7 @@ func (e *ExecErrors) Add(r ExecResult) {
 // Lint runs the linter specified by bin for each package in pkgs.
 // The linter is installed if necessary using go get importPath.
 func Lint(bin, importPath string, pkgs []string, args ...string) error {
-	b, err := InstallMissing(bin, importPath)
+	b, err := InstallMissing(bin, importPath, importPath)
 	if err != nil {
 		return err
 	}

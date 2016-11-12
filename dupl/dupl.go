@@ -56,7 +56,7 @@ func (c Check) Check(pkgs ...string) error {
 	if err != nil {
 		return err
 	}
-	bin, err := checkers.InstallMissing("dupl", "github.com/mibk/dupl")
+	bin, err := checkers.InstallMissing("dupl", "github.com/mibk/dupl", "github.com/mibk/dupl")
 	if err != nil {
 		return err
 	}
