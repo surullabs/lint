@@ -31,3 +31,4 @@ _testmain.go
 out
 .DS_Store
 
+.ruby-version

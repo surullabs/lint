@@ -1,4 +1,15 @@
 language: go
-
 go:
-  - 1.6
+- 1.6
+env:
+  global:
+  - PATH=$HOME/gopath/bin:$PATH
+  - secure: rJu5iwvxj/IxwSWAiB2qrAX9+Rytd4xsQFwNJlnlXBPD03T2BzaPIegUZfMVX8nYtNdmpIhAufKEDRVCmzGNWSYXe426AyReShYjZ30IROG7Ym4eB+dYZLhGi24208yt6eoq64ha25s+zNrPGRusQ0/AfLTog0Yaxp0sFLJRBGhXPG8e+10fN8w3ClnA4Xx9Hk7YWz57qyRJkPbcZw4XyybO55XlfXTrwa+JopXCO35LfzjMS5c3/ZWRR6LpLsYYo/2OTMKz6FLZRYBc0QSpgkV5P+WMpBu9MG502Ots2sDeP23oeHfEZJNHv7qCQbrrZsM/iz+2F7bOhSRzbCQr7AgeKYW+h4gRWkW5riiZ/dAQ1zmBfv4XbAxzxS1QVCvd1LtqLZBjKVXY2DbL40fjcqvzh335k0bIhRr0wGi+DOjT+6/QcxFZfPFwYbjc7Mlpbj1LPpUBasvCld8XA7kExeGsE6xdLJNcBv95fjhKas45i0H/ZTRXjtohlb169rwvQ2fInDKgLDe9l+ceWQxPSvp5svbYKqYKulPnTIDMfckoZdV2RRGl2As+X2Uy07u8SsrLEr0W71yH9go/0nKkYubrSWYQ41yVjyUDqdbS7ul7w+OeC0z0+r1PucvsdzCfHe2/idgl6zZXlHqkR/1/HJWyU9hrve8yXpKkv7iHTnw=
+
+install:
+- go get code.google.com/p/go.tools/cmd/cover github.com/mattn/goveralls github.com/modocache/gover
+
+script:
+- go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs sh -c
+- gover
+- goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
