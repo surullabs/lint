@@ -1,5 +1,7 @@
 ## Lint - run linters from Go
 
+[![Build Status](https://travis-ci.org/surullabs/lint.svg?branch=master)](https://travis-ci.org/surullabs/lint) [![GoDoc](https://godoc.org/github.com/surullabs/lint?status.svg)](https://godoc.org/github.com/surullabs/lint)
+
 Lint makes it easy to run linters from Go code. This allows lint checks to be part of a regular `go build` + `go test` workflow. False positives are easily ignored and linters are automatically integrated into CI pipelines without any extra effort. Check the [project website](https://www.timeferret.com/lint) to learn more about how it can be useful.
 
 ### Quick Start
