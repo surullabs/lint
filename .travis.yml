@@ -10,6 +10,5 @@ install:
 - go get golang.org/x/tools/cover github.com/mattn/goveralls github.com/modocache/gover
 
 script:
-- go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs sh -c
-- gover
+- ./testcovered.sh
 - goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
