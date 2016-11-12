@@ -70,3 +70,20 @@ const expectedUnformatted = `File not formatted: diff GOFMT_TMP_FOLDER
 +	A    string
 +	Long string
  }`
+
+func TestSkipTwo(t *testing.T) {
+	testutil.TestSkips(t, []testutil.SkipTest{
+		{S: dupl.SkipTwo, Line: "some line", Skip: false},
+		{S: dupl.SkipTwo, Line: "found 2 clones: here", Skip: true},
+		{S: dupl.SkipTwo, Line: "checker: found 2 clones: here", Skip: false},
+		{S: dupl.SkipTwo, Line: "dupl.Check: found 2 clones: here", Skip: true},
+	})
+}
+
+func TestSkip(t *testing.T) {
+	testutil.TestSkips(t, []testutil.SkipTest{
+		{S: dupl.Skip("lint.go:1,12"), Line: "some line", Skip: false},
+		{S: dupl.Skip("lint.go:1,12"), Line: "lint.go:1,12", Skip: false},
+		{S: dupl.Skip("lint.go:1,12"), Line: "dupl.Check: found 2 clones: here\nlint.go:1,12", Skip: true},
+	})
+}

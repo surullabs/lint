@@ -6,8 +6,8 @@ import (
 
 	"strings"
 
-	"github.com/surullabs/lint/testutil"
 	"github.com/surullabs/lint/govet"
+	"github.com/surullabs/lint/testutil"
 )
 
 func testVetError(err error) error {

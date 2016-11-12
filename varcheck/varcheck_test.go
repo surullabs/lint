@@ -46,3 +46,10 @@ var unused bool
 	},
 	)
 }
+
+func TestArgs(t *testing.T) {
+	testutil.TestArgs(t, []testutil.ArgTest{
+		{A: varcheck.Check{}, Expected: nil},
+		{A: varcheck.Check{ReportExported: true}, Expected: []string{"-e"}},
+	})
+}

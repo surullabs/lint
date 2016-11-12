@@ -59,3 +59,13 @@ func TestFunc() {
 	},
 	)
 }
+
+func TestArgs(t *testing.T) {
+	testutil.TestArgs(t, []testutil.ArgTest{
+		{A: errcheck.Check{}, Expected: nil},
+		{A: errcheck.Check{Blank: true}, Expected: []string{"-blank"}},
+		{A: errcheck.Check{Assert: true}, Expected: []string{"-assert"}},
+		{A: errcheck.Check{Tags: "test"}, Expected: []string{"-tags", "test"}},
+		{A: errcheck.Check{Blank: true, Assert: true}, Expected: []string{"-blank", "-assert"}},
+	})
+}

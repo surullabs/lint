@@ -49,3 +49,13 @@ type s struct {
 	},
 	)
 }
+
+func TestArgs(t *testing.T) {
+	testutil.TestArgs(t, []testutil.ArgTest{
+		{A: structcheck.Check{}, Expected: nil},
+		{A: structcheck.Check{IncludeTests: true}, Expected: []string{"-t"}},
+		{A: structcheck.Check{OnlyCountAssignments: true}, Expected: []string{"-a"}},
+		{A: structcheck.Check{ReportExported: true}, Expected: []string{"-e"}},
+		{A: structcheck.Check{IncludeTests: true, ReportExported: true}, Expected: []string{"-e", "-t"}},
+	})
+}
