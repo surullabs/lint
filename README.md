@@ -38,6 +38,30 @@ func TestLint(t *testing.T) {
   - `gostaticcheck` - [Verify function arguments](https://github.com/dominikh/go-staticcheck)
   - `errcheck` - [Find ignored errors](https://github.com/kisielk/errcheck)
   
+ ## Using `gometalinter`
+
+[Gometalinter](https://github.com/alecthomas/gometalinter) runs a number of linters concurrently. It also vendors each of these and uses the vendored versions automatically. A vendored version of `gometalinter` is included and can be used in the following manner. Please note that not all linters used by gometalinter have been tested.
+ 
+```
+import (
+    "testing"
+    "github.com/surullabs/lint/gometalinter"
+)
+
+func TestLint(t *testing.T) {
+    // Run default linters
+    metalinter := gometalinter.Check{
+        Args: []string{
+            // Arguments to gometalinter. Do not include the package names here.
+        },
+    }
+    if err := metalinter.Check("./..."); err != nil {
+        t.Fatal("lint failures: %v", err)
+    }
+}
+
+```
+ 
  ## Other available linters
  
   - `varcheck` - [Detect unused variables and constants](https://github.com/opennota/check)

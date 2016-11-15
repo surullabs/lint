@@ -295,6 +295,9 @@ func (p *Package) readPackages() error {
 		if !stat.IsDir() {
 			return nil
 		}
+		if strings.HasPrefix(stat.Name(), "_") || stat.Name() == "testdata" {
+			return filepath.SkipDir
+		}
 		p, perr := build.ImportDir(path, build.FindOnly)
 		if perr != nil {
 			if _, noGo := perr.(*build.NoGoError); noGo {

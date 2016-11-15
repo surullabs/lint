@@ -3,8 +3,8 @@ package gosimple_test
 import (
 	"testing"
 
-	"github.com/surullabs/lint/testutil"
 	"github.com/surullabs/lint/gosimple"
+	"github.com/surullabs/lint/testutil"
 )
 
 func TestGosimple(t *testing.T) {
