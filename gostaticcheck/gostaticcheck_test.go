@@ -3,8 +3,8 @@ package gostaticcheck_test
 import (
 	"testing"
 
-	"github.com/surullabs/lint/testutil"
 	"github.com/surullabs/lint/gostaticcheck"
+	"github.com/surullabs/lint/testutil"
 )
 
 func TestGostaticcheck(t *testing.T) {
