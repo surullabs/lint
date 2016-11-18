@@ -25,7 +25,7 @@ func (c Check) Args() []string {
 		args = append(args, "-blank")
 	}
 	if c.Assert {
-		args = append(args, "-assert")
+		args = append(args, "-asserts")
 	}
 	if c.Tags != "" {
 		args = append(args, "-tags", c.Tags)
