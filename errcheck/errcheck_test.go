@@ -56,6 +56,17 @@ func TestFunc() {
 `),
 			Validate: testutil.SkippedErrors(`f\.Close`),
 		},
+		{
+			Checker: errcheck.Check{Assert: true},
+			Content: []byte(`package errchecktest
+
+func TestFunc() {
+	var i interface{} = 1
+	_ = i.(int)
+}
+`),
+			Validate: testutil.Contains("_ = i.(int)"),
+		},
 	},
 	)
 }
@@ -64,8 +75,8 @@ func TestArgs(t *testing.T) {
 	testutil.TestArgs(t, []testutil.ArgTest{
 		{A: errcheck.Check{}, Expected: nil},
 		{A: errcheck.Check{Blank: true}, Expected: []string{"-blank"}},
-		{A: errcheck.Check{Assert: true}, Expected: []string{"-assert"}},
+		{A: errcheck.Check{Assert: true}, Expected: []string{"-asserts"}},
 		{A: errcheck.Check{Tags: "test"}, Expected: []string{"-tags", "test"}},
-		{A: errcheck.Check{Blank: true, Assert: true}, Expected: []string{"-blank", "-assert"}},
+		{A: errcheck.Check{Blank: true, Assert: true}, Expected: []string{"-blank", "-asserts"}},
 	})
 }
