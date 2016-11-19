@@ -3,8 +3,8 @@ package gosimple_test
 import (
 	"testing"
 
-	"github.com/surullabs/lint/gosimple"
 	"github.com/surullabs/lint/testutil"
+	"github.com/surullabs/lint/gosimple"
 )
 
 func TestGosimple(t *testing.T) {
@@ -36,21 +36,18 @@ func TestFunc() {
 	fmt.Println("undocumented")
 }
 `),
-			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
+			Validate: testutil.Contains("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
 			Checker: gosimple.Check{},
 			Content: []byte(`package gosimpletest
-import (
-	"fmt"
-)
 
 func TestFunc() {
 	for _ = range []string{"a", "b"} {
 	}
 }
 `),
-			Validate: testutil.HasSuffix(
+			Validate: testutil.Contains(
 				"should omit values from range; this loop is equivalent to `for range ...`"),
 		},
 	},

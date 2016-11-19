@@ -3,8 +3,8 @@ package gostaticcheck_test
 import (
 	"testing"
 
-	"github.com/surullabs/lint/gostaticcheck"
 	"github.com/surullabs/lint/testutil"
+	"github.com/surullabs/lint/gostaticcheck"
 )
 
 func TestGostaticcheck(t *testing.T) {
@@ -36,13 +36,12 @@ func TestFunc() {
 	fmt.Println("undocumented")
 }
 `),
-			Validate: testutil.HasSuffix("expected declaration, found 'IDENT' sfsff"),
+			Validate: testutil.Contains("expected declaration, found 'IDENT' sfsff"),
 		},
 		{
 			Checker: gostaticcheck.Check{},
 			Content: []byte(`package gostaticchecktest
 import (
-	"fmt"
 	"regexp"
 )
 
@@ -50,7 +49,7 @@ func TestFunc() {
 	regexp.Compile("foo(")
 }
 `),
-			Validate: testutil.HasSuffix(
+			Validate: testutil.Contains(
 				" error parsing regexp: missing closing ): `foo(`"),
 		},
 	},
