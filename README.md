@@ -79,7 +79,7 @@ There are a number of excellent linters available for Go and Lint makes it easy 
 
 ### Adding a custom linter
 
-Adding a new linter is made dead simple by the `github.com/surullabs/lint/checkers` package. The entire source for the `golint` integration is
+Please check if you can use the [gometalinter](https://godoc.org/github.com/surullabs/lint/gometalinter) package first. If not, adding a new linter is made dead simple by the `github.com/surullabs/lint/checkers` package. The entire source for the `golint` integration is
 
 ```
 import "github.com/surullabs/lint/checkers"
@@ -95,6 +95,9 @@ func (Check) Check(pkgs ...string) error {
 The `github.com/surullabs/lint/testutil` package contains utilities for testing custom linters.
 
 You can also take a look at [this CL](https://github.com/surullabs/lint/commit/5e6be15e3b9964e8465655abb9759defd1c46af9) which adds `varcheck` for an example of how to add a linter.
+
+If you'd like to vendor the linter source, please use the same method as the `gometalinter` package.
+
 ### License
 
 Lint is available under the Apache License. See the LICENSE file for details.
