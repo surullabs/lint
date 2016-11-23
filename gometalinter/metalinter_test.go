@@ -73,6 +73,7 @@ func Example() {
 			// These are not recommendations for linters to disable.
 			"--disable=gocyclo",
 			"--disable=gas",
+			"--deadline=20s",
 		},
 	}
 	if err := metalinter.Check("./..."); err != nil {
