@@ -272,8 +272,8 @@ func (p *Package) readPackages() error {
 		return fmt.Errorf("failed to find cwd: %v", err)
 	}
 	if filepath.Base(p.Path) != "..." {
-		b, err := build.Import(p.Path, wd, build.FindOnly)
-		if err != nil {
+		var b *build.Package
+		if b, err = build.Import(p.Path, wd, build.FindOnly); err != nil {
 			return fmt.Errorf("import failed: %s: %v", p.Path, err)
 		}
 		p.Pkgs, p.Build = []string{b.ImportPath}, b

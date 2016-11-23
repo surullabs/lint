@@ -6,6 +6,9 @@ import (
 
 	"strings"
 
+	"path/filepath"
+
+	"github.com/sridharv/fakegopath"
 	"github.com/surullabs/lint/govet"
 	"github.com/surullabs/lint/testutil"
 )
@@ -29,6 +32,58 @@ func testVetError(err error) error {
 		return err
 	}
 	return nil
+}
+
+// Using file samples from https://github.com/golang/go/issues/18018
+const file1 = `package main
+
+var foo error
+
+func main() {
+}`
+
+const file2 = `package main
+
+import (
+        "errors"
+        "fmt"
+)
+
+func main() {
+        foo := errors.New("meomeo")
+        fmt.Println(foo)
+}`
+
+const file3 = `package main
+
+import "errors"
+
+type foo error
+
+func newFoo(msg string) foo {
+        return foo(errors.New(msg))
+}
+
+func main() {
+}`
+
+func TestGoVetMultiPackage_Issue7(t *testing.T) {
+	tmp, err := fakegopath.NewTemporaryWithFiles("multipkg", []fakegopath.SourceFile{
+		{Content: []byte(file1), Dest: filepath.Join("root", "package1", "main.go")},
+		{Content: []byte(file2), Dest: filepath.Join("root", "package2", "main.go")},
+		{Content: []byte(file3), Dest: filepath.Join("root", "package3", "main.go")},
+	})
+	if err != nil {
+		t.Fatalf("failed to create temporary go path: %v", err)
+	}
+	defer tmp.Reset()
+
+	if err := govet.Shadow.Check("root/..."); err != nil {
+		t.Fatalf("expected no error, but got: %v", err)
+	}
+	if err := govet.Shadow.Check("root/package1", "root/package2", "root/package3"); err != nil {
+		t.Fatalf("expected no error, but got: %v", err)
+	}
 }
 
 func TestGoVet(t *testing.T) {

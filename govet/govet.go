@@ -18,19 +18,54 @@ var Shadow = Check{Args: []string{"--all", "--shadow"}}
 
 // Check runs go tool vet for pkgs.
 func (c Check) Check(pkgs ...string) error {
-	files, err := checkers.GoFiles(pkgs...)
-	if err != nil {
-		return err
+	var errs []string
+	for _, pkg := range pkgs {
+		// Check files per package. If all files for all packages are
+		// passed in as a glob, it causes incorrect reports as described
+		// in TestGoVetMultiPackage_Issue7. Instead run go vet for each package.
+		errs = append(errs, c.checkPackage(pkg)...)
 	}
-	args := append([]string{"tool", "vet"}, append(c.Args, files...)...)
+	return checkers.Error(errs...)
+}
+
+func (c Check) checkPackage(pkg string) []string {
+	if strings.HasSuffix(pkg, "...") {
+		return c.checkDir(pkg)
+	}
+	files, err := checkers.GoFiles(pkg)
+	if err != nil {
+		return []string{err.Error()}
+	}
+	return c.runVet(files)
+}
+
+func (c Check) runVet(paths []string) []string {
+	if len(paths) == 0 {
+		return nil
+	}
+	args := append([]string{"tool", "vet"}, append(c.Args, paths...)...)
 	res, err := checkers.Exec(exec.Command("go", args...))
 	if err == nil {
 		return nil
 	}
 	switch res.Code {
 	case 1:
-		return checkers.Error(strings.Split(strings.TrimSpace(res.Stderr), "\n")...)
+		return strings.Split(strings.TrimSpace(res.Stderr), "\n")
 	default:
-		return err
+		return []string{err.Error()}
 	}
+}
+
+func (c Check) checkDir(pkg string) []string {
+	p, err := checkers.Load(pkg)
+	if err != nil {
+		return []string{err.Error()}
+	}
+	// Loop through each package since we'd like to ignore directories which have
+	// an _ prefix. In the future this allows us to skip vendor directories as well.
+	var errs []string
+	for _, pkg := range p.Pkgs {
+		errs = append(errs, c.checkPackage(pkg)...)
+	}
+	return errs
 }
