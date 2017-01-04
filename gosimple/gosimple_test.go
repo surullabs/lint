@@ -53,3 +53,39 @@ func TestFunc() {
 	},
 	)
 }
+
+func TestGosimpleMultiFile(t *testing.T) {
+	test := testutil.StaticCheckMultiFileTest{
+		Contents: [][]byte{
+			[]byte(`package gosimpletest
+
+func main() {
+	f()
+}
+`),
+			[]byte(`// +build tag
+
+package gosimpletest
+
+func f() {
+	b := true
+	if b == true {
+	}
+}
+`),
+		},
+		Checker:  gosimple.Check{Tags: "tag"},
+		Validate: testutil.Contains(" should omit comparison to bool constant"),
+	}
+
+	if err := test.Test("gosimpletest"); err != nil {
+		t.Error("Check", err)
+	}
+}
+
+func TestArgs(t *testing.T) {
+	testutil.TestArgs(t, []testutil.ArgTest{
+		{A: gosimple.Check{}, Expected: nil},
+		{A: gosimple.Check{Tags: "test"}, Expected: []string{"-tags", "test"}},
+	})
+}

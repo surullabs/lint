@@ -55,3 +55,39 @@ func TestFunc() {
 	},
 	)
 }
+
+func TestGostaticcheckMultiFile(t *testing.T) {
+	test := testutil.StaticCheckMultiFileTest{
+		Contents: [][]byte{
+			[]byte(`package gostaticchecktest
+
+func main() {
+	f()
+}
+`),
+			[]byte(`// +build tag
+
+package gostaticchecktest
+
+func f() {
+	b := true
+	if !!b {
+	}
+}
+`),
+		},
+		Checker:  gostaticcheck.Check{Tags: "tag"},
+		Validate: testutil.Contains(" negating a boolean twice has no effect"),
+	}
+
+	if err := test.Test("gostaticchecktest"); err != nil {
+		t.Error("Check", err)
+	}
+}
+
+func TestArgs(t *testing.T) {
+	testutil.TestArgs(t, []testutil.ArgTest{
+		{A: gostaticcheck.Check{}, Expected: nil},
+		{A: gostaticcheck.Check{Tags: "test"}, Expected: []string{"-tags", "test"}},
+	})
+}

@@ -24,7 +24,7 @@ func TestLint(t *testing.T) {
 		// Ignore all errors from unused.go
 		lint.RegexpMatch(`unused\.go`),
 		// Ignore duplicates we're okay with.
-		dupl.SkipTwo, dupl.Skip("golint.go:1,12"))
+		dupl.SkipTwo, dupl.Skip("golint.go:1,12"), dupl.Skip("errcheck.go:17,19"))
 
 	if err != nil {
 		t.Fatal(err)
