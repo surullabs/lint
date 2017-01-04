@@ -71,6 +71,35 @@ func TestFunc() {
 	)
 }
 
+func TestGoErrCheckMultiFile(t *testing.T) {
+	test := testutil.StaticCheckMultiFileTest{
+		Contents: [][]byte{
+			[]byte(`package errchecktest
+
+func main() {
+	f()
+}
+`),
+			[]byte(`// +build tag
+
+package errchecktest
+
+import "errors"
+
+func f() error {
+	return errors.New("Returning error")
+}
+`),
+		},
+		Checker:  errcheck.Check{Tags: "tag"},
+		Validate: testutil.HasSuffix("f()"),
+	}
+
+	if err := test.Test("errchecktest"); err != nil {
+		t.Error("Check", err)
+	}
+}
+
 func TestArgs(t *testing.T) {
 	testutil.TestArgs(t, []testutil.ArgTest{
 		{A: errcheck.Check{}, Expected: nil},
