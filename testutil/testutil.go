@@ -3,6 +3,7 @@ package testutil
 
 import (
 	"fmt"
+	"strconv"
 
 	"path/filepath"
 
@@ -16,6 +17,37 @@ import (
 	"github.com/surullabs/lint"
 	"github.com/surullabs/lint/checkers"
 )
+
+// StaticCheckMultiFileTest is a table-driven test for a checker testing a package with multiple files.
+type StaticCheckMultiFileTest struct {
+	// Contents are the contents of the created files.
+	Contents [][]byte
+	// Checker is the checker to run on the package.
+	Checker lint.Checker
+	// Validate returns nil if err is what is expected.
+	Validate func(err error) error
+}
+
+// Test runs the multifile test for pkg.
+func (s StaticCheckMultiFileTest) Test(pkg string) error {
+	checkers.Unload(pkg)
+
+	files := make([]fakegopath.SourceFile, 0, len(s.Contents))
+	for i, content := range s.Contents {
+		files = append(files, fakegopath.SourceFile{
+			Src:     "",
+			Content: content,
+			Dest:    filepath.Join(pkg, "file"+strconv.Itoa(i)+".go"),
+		})
+	}
+
+	tmp, err := fakegopath.NewTemporaryWithFiles(pkg, files)
+	if err != nil {
+		return fmt.Errorf("failed to create temporary go path: %v", err)
+	}
+	defer tmp.Reset()
+	return s.Validate(s.Checker.Check(pkg))
+}
 
 // StaticCheckTest is a table-driven test for a checker.
 type StaticCheckTest struct {
