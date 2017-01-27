@@ -266,6 +266,32 @@ func (p *Package) readFiles() error {
 	return nil
 }
 
+// SkipUnderscoreDirs skips all directories with the _ prefix
+func SkipUnderscoreDirs(path, name string) bool { return strings.HasPrefix(name, "_") }
+
+// SkipTestdata skips all testdata directories
+func SkipTestdata(path, name string) bool { return name == "testdata" }
+
+// SkipVendor skips all vendor directories
+func SkipVendor(path, name string) bool { return name == "vendor" }
+
+// SkipDirs returns a function that will return true if any of fns returns true.
+func SkipDirs(fns ...func(path, name string) bool) func(string, string) bool {
+	return func(p, n string) bool {
+		for _, fn := range fns {
+			if fn(p, n) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// SkipDirFunc determines if a directory must be skipped when listing packages.
+// It takes two arguments, the full path and name of the directory and returns true
+// if the directory should be skipped.
+var SkipDirFunc = SkipDirs(SkipUnderscoreDirs, SkipTestdata)
+
 func (p *Package) readPackages() error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -295,7 +321,7 @@ func (p *Package) readPackages() error {
 		if !stat.IsDir() {
 			return nil
 		}
-		if strings.HasPrefix(stat.Name(), "_") || stat.Name() == "testdata" {
+		if SkipDirFunc(path, stat.Name()) {
 			return filepath.SkipDir
 		}
 		p, perr := build.ImportDir(path, build.FindOnly)
