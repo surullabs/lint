@@ -13,7 +13,7 @@ type Check struct {
 
 // Check runs gosimple for pkg
 func (c Check) Check(pkgs ...string) error {
-	return checkers.Lint("gosimple", "", "honnef.co/go/simple/cmd/gosimple", pkgs, c.Args()...)
+	return checkers.Lint("gosimple", "", "honnef.co/go/tools/cmd/gosimple", pkgs, c.Args()...)
 }
 
 // Args returns command line arguments used for gosimple

@@ -13,7 +13,7 @@ type Check struct {
 
 // Check runs gostaticcheck for pkgs
 func (c Check) Check(pkgs ...string) error {
-	return checkers.Lint("staticcheck", "", "honnef.co/go/staticcheck/cmd/staticcheck", pkgs, c.Args()...)
+	return checkers.Lint("staticcheck", "", "honnef.co/go/tools/cmd/staticcheck", pkgs, c.Args()...)
 }
 
 // Args returns command line arguments used for staticcheck
