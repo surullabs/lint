@@ -3,8 +3,9 @@ package gofmt
 import (
 	"bytes"
 	"fmt"
-	"github.com/surullabs/lint/checkers"
 	"os/exec"
+
+	"github.com/surullabs/lint/checkers"
 )
 
 // Check is implements lint.Checker for gofmt.
