@@ -2,7 +2,7 @@ package gosimple
 
 import (
 	"github.com/surullabs/lint/checkers"
-	_ "honnef.co/go/simple" // Ensure the gosimple bin is downloaded.
+	_ "honnef.co/go/tools/simple" // Ensure the gosimple bin is downloaded.
 )
 
 // Check implements a gosimple Checker (https://github.com/dominikh/go-simple)
