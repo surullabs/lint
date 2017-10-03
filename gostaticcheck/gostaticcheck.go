@@ -2,7 +2,7 @@ package gostaticcheck
 
 import (
 	"github.com/surullabs/lint/checkers"
-	_ "honnef.co/go/staticcheck" // Ensure the staticcheck bin is downloaded.
+	_ "honnef.co/go/tools/staticcheck" // Ensure the staticcheck bin is downloaded.
 )
 
 // Check implements a gostaticcheck Checker (https://github.com/dominikh/go-staticcheck)
