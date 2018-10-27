@@ -88,7 +88,7 @@ type Check struct {
 }
 
 func (Check) Check(pkgs ...string) error {
-    return checkers.Lint("golint", "", github.com/golang/lint/golint", pkgs)
+    return checkers.Lint("golint", "", golang.org/x/lint/golint", pkgs)
 }
 ```
 
